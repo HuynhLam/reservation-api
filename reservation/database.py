@@ -137,13 +137,74 @@ class Connection(object):
             "resources": row["resources"]
         }
 
+    def _create_booking_object(self, row):
+        return {
+            "roomname": row["roomName"],
+            "date": row["date"],
+            "time": row["time"],
+            "firstname": row["firstName"],
+            "lastname": row["lastName"],
+            "email": row["email"],
+            "contactnumber": row["contactNumber"]
+        }
+
     #DATABASE API
     #User
     def add_user(self, username, user_dict):
-        pass
+        # Create the SQL Statements
+        # SQL Statement for extracting the userID given a username
+        query1 = 'SELECT userID from Users WHERE username = ?'
+        # SQL Statement to create the row in  User table
+        query2 = 'INSERT INTO Users(isAdmin, username, password, firstName, lastName, email, contactNumber)\
+                                  VALUES(?,?,?,?,?,?,?)'
+        # temporal variables for user table
+        _isadmin = user_dict.get('isadmin', 0)
+        _password = user_dict.get('password', None)
+        _firstname = user_dict.get('firstname', None)
+        _lastname = user_dict.get('lastname', None)
+        _email = user_dict.get('email', None)
+        _contactnumber = user_dict.get('contactnumber', None)
 
-    def modify_user(self, username, user_dict):
-        pass
+        # Activate foreign key support
+        self.set_foreign_keys_support()
+        # Cursor and row initialization
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        # Execute the statement to extract the id associated to a username
+        pvalue = (username,)
+        cur.execute(query1, pvalue)
+        # No value expected (no other user with that username expected)
+        row = cur.fetchone()
+        # If there is no user add rows in user and user profile
+        if row is None:
+            # Add the row in users table
+            # Execute the statement
+            pvalue = (_isadmin, username, _password, _firstname, _lastname,
+                      _email, _contactnumber)
+            cur.execute(query2, pvalue)
+            self.con.commit()
+            # We do not do any comprobation and return the username
+            return username
+        else:
+            return None
+
+    def delete_user(self, username):
+        # Create the SQL Statements
+        # SQL Statement for deleting the user information
+        query = 'DELETE FROM Users WHERE username = ?'
+        # Activate foreign key support
+        self.set_foreign_keys_support()
+        # Cursor and row initialization
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        # Execute the statement to delete
+        pvalue = (username,)
+        cur.execute(query, pvalue)
+        self.con.commit()
+        # Check that it has been deleted
+        if cur.rowcount < 1:
+            return False
+        return True
 
     #Room
     def get_rooms(self):
@@ -153,8 +214,29 @@ class Connection(object):
         pass
 
     #Booking
-    def get_bookings(self):
-        pass
+    def get_bookings(self, roomname=None):
+        # Create the SQL Statement build the string depending on the existence
+        # of roomname argument.
+        query = 'SELECT * FROM Bookings'
+        # Nickname restriction
+        if roomname is not None:
+            query += " WHERE roomName = '%s'" % roomname
+        # Activate foreign key support
+        self.set_foreign_keys_support()
+        # Cursor and row initialization
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        # Execute main SQL Statement
+        cur.execute(query)
+        # Get results
+        rows = cur.fetchall()
+        if rows is None:
+            return None
+        # Build the return object
+        bookings = []
+        for row in rows:
+            bookings.append(self._create_booking_object(row))
+        return bookings
 
     def add_booking(self, booking_dict):
         pass
