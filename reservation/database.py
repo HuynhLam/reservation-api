@@ -139,37 +139,28 @@ class Connection(object):
 
     #DATABASE API
     #User
-    def get_user(self, username):
-        pass
-
     def add_user(self, username, user_dict):
-        pass
-
-    def delete_user(self, username):
         pass
 
     def modify_user(self, username, user_dict):
         pass
 
-    def get_users(self):
-        pass
-
     #Room
-    def get_room(self, roomname):
-        pass
-
-    def add_room(self, roomname, room_dict):
-        pass
-
-    def delete_room(self, roomname):
+    def get_rooms(self):
         pass
 
     def modify_room(self, roomname, room_dict):
         pass
 
-    def get_rooms(self):
-        pass
-
     #Booking
     def get_bookings(self):
+        pass
+
+    def add_booking(self, booking_dict):
+        pass
+
+    def modify_booking(self, roomname, date, time, booking_dict):
+        pass
+
+    def delete_booking(self, roomname, date, time, booking_dict):
         pass

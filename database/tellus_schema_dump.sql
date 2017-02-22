@@ -1,8 +1,8 @@
 BEGIN TRANSACTION;
 CREATE TABLE "User" (
 	`userID`	INTEGER NOT NULL UNIQUE,
-	`accountType`	TEXT,
-	`username`	TEXT,
+	`isAdmin`	INTEGER,
+	`username`	TEXT NOT NULL UNIQUE,
 	`password`	TEXT,
 	`firstName`	TEXT,
 	`lastName`	TEXT,
@@ -12,16 +12,16 @@ CREATE TABLE "User" (
 );
 CREATE TABLE "Room" (
 	`roomID`	INTEGER NOT NULL UNIQUE,
-	`roomName`	TEXT UNIQUE,
+	`roomName`	TEXT NOT NULL UNIQUE,
 	`picture`	BLOB,
 	`resources`	TEXT,
 	PRIMARY KEY(`roomID`)
 );
 CREATE TABLE "Booking" (
 	`bookingID`	INTEGER NOT NULL UNIQUE,
-	`roomName`	TEXT,
-	`date`	NUMERIC,
-	`time`	NUMERIC,
+	`roomName`	TEXT NOT NULL,
+	`date`	INTEGER,
+	`time`	INTEGER,
 	`firstName`	TEXT,
 	`lastName`	TEXT,
 	`email`	TEXT,
