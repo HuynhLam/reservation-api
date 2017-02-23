@@ -120,7 +120,7 @@ class Connection(object):
     # Helpers
     def _create_user_object(self, row):
         return {
-            "userid": row["userID"],
+            "userid": str(row["userID"]),
             "accounttype": row["accountType"],
             "username": row["username"],
             "firstname": row["firstName"],
@@ -131,7 +131,7 @@ class Connection(object):
 
     def _create_room_object(self, row):
         return {
-            "roomid": row["roomID"],
+            "roomid": str(row["roomID"]),
             "roomname": row["roomName"],
             "picture": row["picture"],
             "resources": row["resources"]
@@ -140,8 +140,8 @@ class Connection(object):
     def _create_booking_object(self, row):
         return {
             "roomname": row["roomName"],
-            "date": row["date"],
-            "time": row["time"],
+            "date": str(row["date"]),
+            "time": str(row["time"]),
             "firstname": row["firstName"],
             "lastname": row["lastName"],
             "email": row["email"],
