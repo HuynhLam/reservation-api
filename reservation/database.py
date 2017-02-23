@@ -6,20 +6,20 @@ DEFAULT_DB_PATH = "database/tellus.db"
 
 class Engine(object):
     '''
-        Abstraction of the database.
+    Abstraction of the database.
 
-        It includes tools to connect to the sqlite file. You can access the Connection
-        instance.
-        :py:meth:`connection`.
+    It includes tools to connect to the sqlite file. You can access the Connection
+    instance.
+    :py:meth:`connection`.
 
-        :Example:
+    :Example:
 
-        > engine = Engine()
-        > con = engine.connect()
+    > engine = Engine()
+    > con = engine.connect()
 
-        :param db_path: The path of the database file (always with respect to the
-            calling script. If not specified, the Engine will use the file located
-            at *database/tellus.db*
+    :param db_path: The path of the database file (always with respect to the
+        calling script. If not specified, the Engine will use the file located
+        at *database/tellus.db*
 
     '''
     def __init__(self, db_path=None):
@@ -41,6 +41,23 @@ class Engine(object):
 
 
 class Connection(object):
+    '''
+    API to access the Tellus database.
+
+    The sqlite3 connection instance is accessible to all the methods of this
+    class through the :py:attr:`self.con` attribute.
+
+    An instance of this class should not be instantiated directly using the
+    constructor. Instead use the :py:meth:`Engine.connect`.
+
+    Use the method :py:meth:`close` in order to close a connection.
+    A :py:class:`Connection` **MUST** always be closed once when it is not going to be
+    utilized anymore in order to release internal locks.
+
+    :param db_path: Location of the database file.
+    :type dbpath: str
+
+    '''
     def __init__(self, db_path):
         super(Connection, self).__init__()
         self.con = sqlite3.connect(db_path)
@@ -119,6 +136,38 @@ class Connection(object):
 
     # Helpers
     def _create_user_object(self, row):
+        '''
+        It takes a database Row and transform it into a python dictionary.
+
+        :param row: The row obtained from the database.
+        :type row: sqlite3.Row
+        :return: a dictionary with the following format:
+
+            .. code-block:: javascript
+
+                {
+                    "userid": '',
+                    "accounttype": '',
+                    "username": '',
+                    "firstname": '',
+                    "lastname": '',
+                    "email": '',
+                    "contactnumber": ''
+                }
+
+            where:
+
+            * ``userid``: Unique identifying user ID.
+            * ``accounttype``: Account type to identify User or Admin.
+            * ``username``: Username of user login.
+            * ``firstname``: First name of user.
+            * ``lastname``: Last name of user.
+            * ``email``: Email of user.
+            * ``contactnumber``: Contact number of user.
+
+            Note that all values are string if they are not otherwise indicated.
+
+        '''
         return {
             "userid": str(row["userID"]),
             "accounttype": row["accountType"],
@@ -138,6 +187,38 @@ class Connection(object):
         }
 
     def _create_booking_object(self, row):
+        '''
+        It takes a database Row and transform it into a python dictionary.
+
+        :param row: The row obtained from the database.
+        :type row: sqlite3.Row
+        :return: a dictionary with the following format:
+
+            .. code-block:: javascript
+
+                {
+                    "roomname": '',
+                    "date": '',
+                    "time": '',
+                    "firstname": '',
+                    "lastname": '',
+                    "email": '',
+                    "contactnumber": ''
+                }
+
+            where:
+
+            * ``roomname``: Name of room to be booked.
+            * ``date``: Date of booking.
+            * ``time``: Time of booking.
+            * ``firstname``: First name of user.
+            * ``lastname``: Last name of user.
+            * ``email``: Email of user.
+            * ``contactnumber``: Contact number of user.
+
+            Note that all values are string if they are not otherwise indicated.
+
+        '''
         return {
             "roomname": row["roomName"],
             "date": str(row["date"]),
@@ -151,6 +232,42 @@ class Connection(object):
     #DATABASE API
     #User
     def add_user(self, username, user_dict):
+        '''
+        Create a new user in the database.
+
+        :param str username: The username of the user to add
+        :param dict user_dict: a dictionary with the information to be modified. The
+                dictionary has the following structure:
+
+                .. code-block:: javascript
+
+                    {
+                        "userid": '',
+                        "accounttype": '',
+                        "username": '',
+                        "firstname": '',
+                        "lastname": '',
+                        "email": '',
+                        "contactnumber": ''
+                    }
+
+                where:
+
+                * ``userid``: Unique identifying user ID.
+                * ``accounttype``: Account type to identify User or Admin.
+                * ``username``: Username of user login.
+                * ``firstname``: First name of user.
+                * ``lastname``: Last name of user.
+                * ``email``: Email of user.
+                * ``contactnumber``: Contact number of user.
+
+            Note that all values are string if they are not otherwise indicated.
+
+        :return: the username of the modified user or None if the
+            ``username`` passed as parameter is already  in the database.
+        :raise ValueError: if the user argument is not well formed.
+
+        '''
         # Create the SQL Statements
         # SQL Statement for extracting the userID given a username
         query1 = 'SELECT userID from Users WHERE username = ?'
@@ -183,12 +300,21 @@ class Connection(object):
                       _email, _contactnumber)
             cur.execute(query2, pvalue)
             self.con.commit()
-            # We do not do any comprobation and return the username
+            # We do not do any composition and return the username
             return username
         else:
             return None
 
     def delete_user(self, username):
+        '''
+        Remove all user information of the user with the username passed in as
+        argument.
+
+        :param str username: The username of the user to remove.
+
+        :return: True if the user is deleted, False otherwise.
+
+        '''
         # Create the SQL Statements
         # SQL Statement for deleting the user information
         query = 'DELETE FROM Users WHERE username = ?'
@@ -277,6 +403,30 @@ class Connection(object):
 
     #Booking
     def get_bookings(self, roomname=None):
+        '''
+        Return a list of all the bookings in the database filtered by the
+        roomname if it is passed as argument.
+
+        :param roomname: default None. Search bookings of a room with the given
+            roomname. If this parameter is None, it returns the bookings of
+            any room in the system.
+        :type roomname: str
+
+        :return: A list of bookings. Each booking is a dictionary containing
+            the following keys:
+
+            * ``roomname``: Name of room to be booked.
+            * ``date``: Date of booking.
+            * ``time``: Time of booking.
+            * ``firstname``: First name of user.
+            * ``lastname``: Last name of user.
+            * ``email``: Email of user.
+            * ``contactnumber``: Contact number of user.
+
+            Note that all values in the returned dictionary are string unless
+            otherwise stated.
+
+        '''
         # Create the SQL Statement build the string depending on the existence
         # of roomname argument.
         query = 'SELECT * FROM Bookings'
