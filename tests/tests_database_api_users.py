@@ -1,3 +1,27 @@
+'''
+Database interface testing for all users related methods.
+The user has a data model represented by the following User dictionary:
+    {
+        "userid": '',
+        "accounttype": '',
+        "username": '',
+        "firstname": '',
+        "lastname": '',
+        "email": '',
+        "contactnumber": ''
+    }
+
+    where:
+
+    * ``userid``: Unique identifying user ID.
+    * ``accounttype``: Account type to identify User or Admin.
+    * ``username``: Username of user login.
+    * ``firstname``: First name of user.
+    * ``lastname``: Last name of user.
+    * ``email``: Email of user.
+    * ``contactnumber``: Contact number of user.
+
+'''
 import unittest, sqlite3
 from reservation import database
 
@@ -8,15 +32,17 @@ ENGINE = database.Engine(DB_PATH)
 
 #CONSTANTS DEFINING DIFFERENT USERS AND USER PROPERTIES
 NEW_USER = "newuser"
+NEW_USER1 = "donut"
 USER_DICT_CORRECT_DATA = {'isadmin': 0,
                           'password': 'test_pass',
                           'firstname': 'firstname0',
                           'lastname': 'lastname0',
                           'email': 'john@example.com',
                           'contactnumber': '69696969'}
+USER_EMPTY_ROW = (0, u'donut', None, None, None, None, None)
 EXSISTING_USER = "para"
 NOT_EXSISTING_USER = "CrazyBoy95"
-INITIAL_SIZE_USER = 3
+INITIAL_SIZE_USER = 4
 
 class UserDBAPITestCase(unittest.TestCase):
     '''
@@ -100,6 +126,36 @@ class UserDBAPITestCase(unittest.TestCase):
             self.test_add_existing_user.__doc__
         username = self.connection.add_user(EXSISTING_USER, USER_DICT_CORRECT_DATA)
         self.assertIsNone(username)
+
+    def test_add_user_with_empty_user_dict(self):
+        '''
+        Test that I can add new user with empty dict (predefined data)
+        '''
+        print '(' + self.test_add_user_with_empty_user_dict.__name__ + ')', \
+            self.test_add_user_with_empty_user_dict.__doc__
+        username = self.connection.add_user(NEW_USER1, {})
+        self.assertIsNotNone(username)
+        self.assertEquals(username, NEW_USER1)
+        #Check that user is really created
+        # Create the SQL Statement
+        keys_on = 'PRAGMA foreign_keys = ON'
+        query = "SELECT * FROM Users WHERE username = '%s'" % NEW_USER1
+        # Connects to the database.
+        con = self.connection.con
+        with con:
+            # Cursor and row initialization
+            con.row_factory = sqlite3.Row
+            cur = con.cursor()
+            # Provide support for foreign keys
+            cur.execute(keys_on)
+            # Execute main SQL Statement
+            cur.execute(query)
+            users = cur.fetchall()
+            # Assert
+            self.assertEquals(len(users), 1)
+            # Check data is same with predefined
+            r_list = list(users[0])
+            self.assertListEqual(r_list[1:8], list(USER_EMPTY_ROW))
 
     def test_delete_user(self):
         '''

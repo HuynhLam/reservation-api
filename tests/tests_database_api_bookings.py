@@ -1,3 +1,27 @@
+'''
+Database interface testing for all bookings related methods.
+The booking has a data model represented by the following User dictionary:
+    {
+        "roomname": '',
+        "date": '',
+        "time": '',
+        "firstname": '',
+        "lastname": '',
+        "email": '',
+        "contactnumber": ''
+    }
+
+    where:
+
+    * ``roomname``: Name of room to be booked.
+    * ``date``: Date of booking.
+    * ``time``: Time of booking.
+    * ``firstname``: First name of user.
+    * ``lastname``: Last name of user.
+    * ``email``: Email of user.
+    * ``contactnumber``: Contact number of user.
+
+'''
 import unittest, sqlite3
 from reservation import database
 
