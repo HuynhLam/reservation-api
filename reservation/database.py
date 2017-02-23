@@ -208,10 +208,73 @@ class Connection(object):
 
     #Room
     def get_rooms(self):
-        pass
+        '''
+        Extracts all existence rooms in the database.
+        :return: list of Users of the database. Each room instance is a dictionary
+            that contains 1 key: ``roomID``(integer).
+            There is no FOREIGN KEY.
+            None is returned if the database has no rooms.
 
-    def modify_room(self, roomname, room_dict):
-        pass
+        '''
+        # SQL query to get the list of existence rooms
+        query = 'SELECT * FROM Rooms'
+        # Cursor and row initialization
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        # Execute main SQL Statement
+        cur.execute(query)
+        # Get results
+        rows = cur.fetchall()
+        if rows is None:
+            return None
+        # Build the return object
+        rooms = []
+        for row in rows:
+            rooms.append(self._create_room_object(row))
+        return rooms
+
+    def modify_room(self, roomName, room_dict):
+        '''
+        Modify the information of a room.
+
+        :param string roomName: The name of the room to modify
+        :param dict rpom: a dictionary with the information to be modified.
+
+        :return: the roomName of the modified room or None if the
+            ``roomName`` passed as parameter is not  in the database.
+        :raise ValueError: if the room argument is not well formed.
+
+        '''
+        #Create the SQL Statements
+        #SQL Statement for extracting the roomID from given a roomName
+        query1 = 'SELECT roomID from Rooms WHERE roomName = ?'
+        #SQL Statement to update the Rooms table
+        query2 = 'UPDATE Rooms SET picture = ?,resources = ? WHERE room_id = ?'
+        #temporal variables
+        room_id = None
+        _picture = room_dict.get('picture', None)
+        _resources = room_dict.get('resources', None)
+        #Cursor and row initialization
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        #Execute the statement to extract the id associated to a roomName
+        pvalue = (roomName,)
+        cur.execute(query1, pvalue)
+        #Only one value expected
+        row = cur.fetchone()
+        #if does not exist, return
+        if row is None:
+            return None
+        else:
+            room_id = row["roomID"]
+            #execute the main statement
+            pvalue = (_picture, _resources, room_id)
+            cur.execute(query2, pvalue)
+            self.con.commit()
+            #Check that we have modified the user
+            if cur.rowcount < 1:
+                return None
+            return roomName
 
     #Booking
     def get_bookings(self, roomname=None):
