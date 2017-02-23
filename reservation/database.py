@@ -240,9 +240,8 @@ class Connection(object):
         :param string roomName: The name of the room to modify
         :param dict rpom: a dictionary with the information to be modified.
 
-        :return: the roomName of the modified room or None if the
-            ``roomName`` passed as parameter is not  in the database.
-        :raise ValueError: if the room argument is not well formed.
+        :return: roomName of the modified room 
+                 None if ``roomName`` parameter is not in the database.
 
         '''
         #Create the SQL Statements
@@ -308,4 +307,21 @@ class Connection(object):
         pass
 
     def delete_booking(self, roomname, date, time, booking_dict):
-        pass
+        '''
+        Delete the booking with id given as parameter.
+        :return: True if the booking has been deleted, False otherwise
+
+        '''
+        #Create the SQL Statements
+        query = "DELETE FROM Bookings WHERE roomname=?, date=?, time=?"
+        #Cursor and row initialization
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        #Execute the statement to delete
+        pvalue = (roomname, date, time,)
+        cur.execute(query, pvalue)
+        self.con.commit()
+        #Check that it has been deleted
+        if cur.rowcount < 1:
+            return False
+        return True
