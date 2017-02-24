@@ -49,7 +49,14 @@ BOOKING2 = {'roomname': 'Chill',
             'lastname': 'Narendradhipa',
             'email': 'paramartha.n@ee.oulu.fi',
             'contactnumber': '0417511944'}
-INITIAL_SIZE_BOOKING = 2
+NON_EXIST_BOOKING = {   'roomname': 'Vodka',
+                        'date': '20181212',
+                        'time': '0800',
+                        'firstname': 'Paramartha',
+                        'lastname': 'Narendradhipa',
+                        'email': 'paramartha.n@ee.oulu.fi',
+                        'contactnumber': '0417511944'}
+INITIAL_SIZE_BOOKING = 5
 
 
 class BookingsDBAPITestCase(unittest.TestCase):
@@ -139,6 +146,40 @@ class BookingsDBAPITestCase(unittest.TestCase):
         bookings = self.connection.get_bookings(roomname=WRONG_ROOMNAME)
         # Check length of the array is correct
         self.assertListEqual(bookings, [])
+
+    def test_zdelete_booking(self):
+        '''
+        Test that booking at room: 'Stage' on 2017-03-01 10:00 is deleted successfully
+        '''
+        print '(' + self.test_zdelete_booking.__name__ + ')', \
+            self.test_zdelete_booking.__doc__
+        resp = self.connection.delete_booking(BOOKING1['roomname'], int(BOOKING1['date']), int(BOOKING1['time']))
+        self.assertTrue(resp)
+        # Check is the booking really was deleted
+        # Create the SQL Statement
+        query = "SELECT * FROM Bookings WHERE roomname = ? AND date = ? AND time = ?" 
+        # Connects to the database.
+        con = self.connection.con
+        with con:
+            # Cursor and row initialization
+            con.row_factory = sqlite3.Row
+            cur = con.cursor()
+            # Execute main SQL Statement
+            pvalue = (BOOKING1['roomname'], BOOKING1['date'], BOOKING1['time'])
+            cur.execute(query, pvalue)
+            bookings = cur.fetchall()
+            # Assert, len(bookings)>0 means delete booking was done improperly
+            self.assertEquals(len(bookings), 0)
+
+    def test_zdelete_non_exist_booking(self):
+        '''
+        Test delete_booking with the non-existing booking at room: 'Vodka' on 2018-12-12,08:00
+        '''
+        print '(' + self.test_zdelete_non_exist_booking.__name__ + ')', \
+            self.test_zdelete_non_exist_booking.__doc__
+        # Test delete_booking with a non existing booking
+        resp = self.connection.delete_booking(NON_EXIST_BOOKING['roomname'], NON_EXIST_BOOKING['date'], NON_EXIST_BOOKING['time'])
+        self.assertFalse(resp)
 
 if __name__ == '__main__':
     print 'Start running tests'

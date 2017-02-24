@@ -485,19 +485,19 @@ class Connection(object):
     def modify_booking(self, roomname, date, time, booking_dict):
         pass
 
-    def delete_booking(self, roomName, date, time, booking_dict):
+    def delete_booking(self, roomName, date, time):
         '''
         Delete the booking with id given as parameter.
         :return: True if the booking has been deleted, False otherwise
 
         '''
         #Create the SQL Statements
-        query = "DELETE FROM Bookings WHERE roomName=?, date=?, time=?"
+        query = "DELETE FROM Bookings WHERE roomName = ? AND date = ? AND time = ?"
         #Cursor and row initialization
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         #Execute the statement to delete
-        pvalue = (roomName, date, time,)
+        pvalue = (roomName, date, time)
         cur.execute(query, pvalue)
         self.con.commit()
         #Check that it has been deleted

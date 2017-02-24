@@ -6,3 +6,6 @@ INSERT INTO `Rooms` VALUES (2,'Aspire','aspire.jpg','TV, Webcam, Microphone, Tab
 INSERT INTO `Rooms` VALUES (3,'Chill','chill.jpg','TV, Bean Bags');
 INSERT INTO `Bookings` VALUES (1,'Stage',20170301,1000,'Onur','Ozuduru','onur.ozuduru@ee.oulu.fi','0411311911');
 INSERT INTO `Bookings` VALUES (2,'Chill',2017035,1200,'Paramartha','Narendradhipa','paramartha.n@ee.oulu.fi','0417511944');
+INSERT INTO `Bookings` VALUES (3,'Aspire',2017039,1400,'Lam','Huynh','lam.huynh@ee.oulu.fi','0411322922');
+INSERT INTO `Bookings` VALUES (4,'Aspire',20170508,0930,'Lam','Huynh','lam.huynh@ee.oulu.fi','0411322922');
+INSERT INTO `Bookings` VALUES (5,'Aspire',20171015,1135,'Lam','Huynh','lam.huynh@ee.oulu.fi','0411322922');
