@@ -35,13 +35,16 @@ if [ -f "$DB_FOLDER$DB_FILE_NAME" ]; then
     echo "Removing old database."
     rm $DB_FOLDER$DB_FILE_NAME
     echo "Old database is removed."
+    echo ".........................."
 fi
 
 ## Create and populate new database
 echo "Tables are creating."
+echo ".........................."
 cat $DB_FOLDER$DB_SCHEMA_FILE_NAME | sqlite3 $DB_FOLDER$DB_FILE_NAME
 
 echo "Database is populating."
+echo ".........................."
 cat $DB_FOLDER$DB_DATA_FILE_NAME | sqlite3 $DB_FOLDER$DB_FILE_NAME
 
 echo "Database is created."

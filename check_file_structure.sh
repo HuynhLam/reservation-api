@@ -26,6 +26,7 @@ if [ ! -d "$DB_FOLDER" ]; then
     exit 0
 fi
 echo "$DB_FOLDER is in right place."
+echo ".........................."
 
 echo "Checking $API_FOLDER"
 ## Check api folder exists
@@ -35,6 +36,7 @@ if [ ! -d "$API_FOLDER" ]; then
     exit 0
 fi
 echo "$API_FOLDER is in right place."
+echo ".........................."
 
 echo "Checking $TEST_FOLDER"
 ## Check tests folder exists
@@ -44,6 +46,7 @@ if [ ! -d "$TEST_FOLDER" ]; then
     exit 0
 fi
 echo "$TEST_FOLDER is in right place."
+echo ".........................."
 
 ## Check database files.
 for i in "${db_files[@]}"
@@ -55,6 +58,7 @@ do
         exit 0
     fi
     echo "$i is in right place."
+    echo ".........................."
 done
 
 ## Check api files.
@@ -67,6 +71,7 @@ do
         exit 0
     fi
     echo "$i is in right place."
+    echo ".........................."
 done
 
 ## Check database files.
@@ -76,9 +81,9 @@ do
     if [ ! -f "$TEST_FOLDER$i" ]; then
         echo "$i does not exist."
         echo $WARN
-        exit 0
     fi
     echo "$i is in right place."
+    echo ".........................."
 done
 
 echo "It seems that everything is OK."

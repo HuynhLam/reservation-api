@@ -35,15 +35,19 @@ function create_test_db {
     ## Remove old test database
     if [ -f "$DB_FOLDER$DB_TEST_FILE_NAME" ]; then
         echo "Removing old test database."
+        echo ".........................."
         rm $DB_FOLDER$DB_TEST_FILE_NAME
         echo "Old test database is removed."
+        echo ".........................."
     fi
 
     ## Create and populate new test database
     echo "Tables are creating."
+    echo ".........................."
     cat $DB_FOLDER$DB_SCHEMA_FILE_NAME | sqlite3 $DB_FOLDER$DB_TEST_FILE_NAME
 
     echo "Database is populating."
+    echo ".........................."
     cat $DB_FOLDER$DB_DATA_FILE_NAME | sqlite3 $DB_FOLDER$DB_TEST_FILE_NAME
 }
 
@@ -54,14 +58,17 @@ do
     create_test_db
     if [ ! -f "$TEST_FOLDER$i" ]; then
         echo "Test file $i is running."
+        echo ".........................."
         python -m $TEST_FOLDER$i
     fi
 
     ## Remove old test database
     if [ -f "$DB_FOLDER$DB_TEST_FILE_NAME" ]; then
         echo "Removing old test database."
+        echo ".........................."
         rm $DB_FOLDER$DB_TEST_FILE_NAME
         echo "Old test database is removed."
+        echo ".........................."
     fi
 done
 
