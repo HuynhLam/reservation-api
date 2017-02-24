@@ -1,7 +1,8 @@
 ###############################################################################
-# Bash script file to create and populate test database for unit tests.
-# It must be run before every test to make sure that test database is correctly
-# created under right directory.
+# Bash script file to create and populate database.
+# It is recommended to run this script for creating db.
+# WARNING: It removes old db files, so, be careful if you have changes and
+# want to keep them. Please, create a copy of your changes to keep them safe.
 ###############################################################################
 #!/bin/bash
 
@@ -9,7 +10,7 @@
 DB_FOLDER="database/"
 DB_SCHEMA_FILE_NAME="tellus_schema_dump.sql"
 DB_DATA_FILE_NAME="tellus_data_dump.sql"
-DB_TEST_FILE_NAME="test_tellus.db"
+DB_FILE_NAME="tellus.db"
 
 ## Check database folder exists
 if [ ! -d "$DB_FOLDER" ]; then
@@ -29,20 +30,23 @@ if [ ! -f "$DB_FOLDER$DB_DATA_FILE_NAME" ]; then
     exit 0
 fi
 
-## Remove old test database
-if [ -f "$DB_FOLDER$DB_TEST_FILE_NAME" ]; then
-    echo "Removing old test database."
-    rm $DB_FOLDER$DB_TEST_FILE_NAME
-    echo "Old test database is removed."
+## Remove old database
+if [ -f "$DB_FOLDER$DB_FILE_NAME" ]; then
+    echo "Removing old database."
+    rm $DB_FOLDER$DB_FILE_NAME
+    echo "Old database is removed."
+    echo ".........................."
 fi
 
-## Create and populate new test database
+## Create and populate new database
 echo "Tables are creating."
-cat $DB_FOLDER$DB_SCHEMA_FILE_NAME | sqlite3 $DB_FOLDER$DB_TEST_FILE_NAME
+echo ".........................."
+cat $DB_FOLDER$DB_SCHEMA_FILE_NAME | sqlite3 $DB_FOLDER$DB_FILE_NAME
 
 echo "Database is populating."
-cat $DB_FOLDER$DB_DATA_FILE_NAME | sqlite3 $DB_FOLDER$DB_TEST_FILE_NAME
+echo ".........................."
+cat $DB_FOLDER$DB_DATA_FILE_NAME | sqlite3 $DB_FOLDER$DB_FILE_NAME
 
-echo "Everything is done."
+echo "Database is created."
 echo "Bye"
 exit 0
