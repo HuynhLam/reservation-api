@@ -40,8 +40,8 @@ USER_DICT_CORRECT_DATA = {'isadmin': 0,
                           'email': 'john@example.com',
                           'contactnumber': '69696969'}
 USER_EMPTY_ROW = (0, u'donut', None, None, None, None, None)
-EXSISTING_USER = "para"
-NOT_EXSISTING_USER = "CrazyBoy95"
+EXISTING_USER = "para"
+NOT_EXISTING_USER = "CrazyBoy95"
 INITIAL_SIZE_USER = 4
 
 class UserDBAPITestCase(unittest.TestCase):
@@ -124,7 +124,7 @@ class UserDBAPITestCase(unittest.TestCase):
         '''
         print '(' + self.test_add_existing_user.__name__ + ')', \
             self.test_add_existing_user.__doc__
-        username = self.connection.add_user(EXSISTING_USER, USER_DICT_CORRECT_DATA)
+        username = self.connection.add_user(EXISTING_USER, USER_DICT_CORRECT_DATA)
         self.assertIsNone(username)
 
     def test_add_user_with_empty_user_dict(self):
@@ -163,12 +163,12 @@ class UserDBAPITestCase(unittest.TestCase):
         '''
         print '(' + self.test_delete_user.__name__ + ')', \
             self.test_delete_user.__doc__
-        resp = self.connection.delete_user(EXSISTING_USER)
+        resp = self.connection.delete_user(EXISTING_USER)
         self.assertTrue(resp)
         # Check that the user has been really deleted from db
         # Create the SQL Statement
         keys_on = 'PRAGMA foreign_keys = ON'
-        query = "SELECT * FROM Users WHERE username = '%s'" % EXSISTING_USER
+        query = "SELECT * FROM Users WHERE username = '%s'" % EXISTING_USER
         # Connects to the database.
         con = self.connection.con
         with con:
@@ -190,7 +190,7 @@ class UserDBAPITestCase(unittest.TestCase):
         print '(' + self.test_delete_user_noexistingnickname.__name__ + ')', \
             self.test_delete_user_noexistingnickname.__doc__
         # Test with an existing user
-        resp = self.connection.delete_user(NOT_EXSISTING_USER)
+        resp = self.connection.delete_user(NOT_EXISTING_USER)
         self.assertFalse(resp)
 
 if __name__ == '__main__':
