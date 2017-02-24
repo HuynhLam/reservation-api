@@ -11,7 +11,7 @@ TEST_FOLDER="tests/"
 
 # File names
 declare -a db_files=("tellus_schema_dump.sql" "tellus_data_dump.sql")
-declare -a api_files=("database.py" "resorces.py")
+declare -a api_files=("database.py" "resources.py")
 declare -a test_files=("tests_database_api_bookings.py" "tests_database_api_users.py")
 
 # Messages to inform user
