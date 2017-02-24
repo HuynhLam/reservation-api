@@ -1,3 +1,22 @@
+'''
+Database interface testing for all Rooms related methods.
+The room is a dictionary that contains:
+    {
+        "roomid": '',
+        "roomname": '',
+        "picture": '',
+        "resources": ''
+    }
+
+    where:
+
+    * ``roomid``: Unique identifying room ID.
+    * ``roomname``: Name of room to be booked.
+    * ``picture``: Image of the room.
+    * ``resources``: Room equiments.
+
+'''
+
 import unittest, sqlite3
 from reservation import database
 
@@ -7,42 +26,32 @@ DB_PATH = "database/test_tellus.db"
 ENGINE = database.Engine(DB_PATH)
 
 #CONSTANTS DEFINING DIFFERENT USERS AND USER PROPERTIES
-NEW_USER = "newuser"
-USER_DICT_CORRECT_DATA = {'isadmin': 0,
-                          'password': 'test_pass',
-                          'firstname': 'firstname0',
-                          'lastname': 'lastname0',
-                          'email': 'john@example.com',
-                          'contactnumber': '69696969'}
-EXSISTING_USER = "para"
-NOT_EXSISTING_USER = "CrazyBoy95"
-INITIAL_SIZE_USER = 3
+ROOM_NAME_1 = 'Stage'
+ROOM1 = {   'roomid': '1',
+            'roomname': 'Stage',
+            'picture': 'stage.jpg',
+            'resources': 'Projector, Microphone, Speaker, Webcam, Tables, Chairs'}
 
-ROOMNAME1 = 'Stage'
-ROOMNAME2 = 'Chill'
-WRONG_ROOMNAME = 'Vodka'
+ROOM_NAME_2 = 'Aspire'
+MODIFY_ROOM2 = {    'roomid': 2,
+                    'roomname': 'Aspire',
+                    'picture': 'aspire_image_update.jpg',
+                    'resources': 'TV, Webcam, Microphone, Tables, Chairs, Books, Computers, Printers'}
 
-BOOKING1 = {'roomname': 'Stage',
-            'date': '20170301',
-            'time': '1000',
-            'firstname': 'Onur',
-            'lastname': 'Ozuduru',
-            'email': 'onur.ozuduru@ee.oulu.fi',
-            'contactnumber': '0411311911'}
-BOOKING2 = {'roomname': 'Chill',
-            'date': '2017035',
-            'time': '1200',
-            'firstname': 'Paramartha',
-            'lastname': 'Narendradhipa',
-            'email': 'paramartha.n@ee.oulu.fi',
-            'contactnumber': '0417511944'}
-INITIAL_SIZE_BOOKING = 2
+ROOM_NAME_3 = 'Chill'
+ROOM3 = {   'roomid': '3',
+            'roomname': 'Chill',
+            'picture': 'chill.jpg',
+            'resources': 'TV, Bean Bags'}
+            
+ROOM_WRONG_ROOMNAME = 'Parempaa'
+INITIAL_ROOMS_SIZE = 3
 
 
-class DBAPITestCase(unittest.TestCase):
+class RoomsDBAPITestCase(unittest.TestCase):
     '''
     Test cases for the database API.
-    It includes test cases for User, Room and Booking.
+    It includes test cases for Rooms.
     '''
     #INITIATION METHODS
     def setUp(self):
@@ -58,172 +67,106 @@ class DBAPITestCase(unittest.TestCase):
         '''
         self.connection.close()
 
-    def test_users_table_created(self):
+    # Test init Rooms table.
+    def test_rooms_table_created(self):
         '''
-        Checks that the table initially contains 3 users (check
-        tellus_data_dump.sql). NOTE: Do not use Connection instance but
-        call directly SQL.
+        Checks that the table initially contains 3 Rooms.
+        (check tellus_data_dump.sql).
+        NOTE: Do not use Connection instance but call directly SQL.
         '''
-        print '('+self.test_users_table_created.__name__+')', \
-              self.test_users_table_created.__doc__
+        print '('+self.test_rooms_table_created.__name__+')', \
+              self.test_rooms_table_created.__doc__
         #Create the SQL Statement
-        keys_on = 'PRAGMA foreign_keys = ON'
-        query = 'SELECT * FROM Users'
+        query = 'SELECT * FROM Rooms'
         #Connects to the database.
         con = self.connection.con
         with con:
             #Cursor and row initialization
             con.row_factory = sqlite3.Row
             cur = con.cursor()
-            #Provide support for foreign keys
-            cur.execute(keys_on)
             #Execute main SQL Statement
             cur.execute(query)
-            users = cur.fetchall()
+            rooms = cur.fetchall()
             #Assert
-            self.assertEquals(len(users), INITIAL_SIZE_USER)
+            self.assertEquals(len(rooms), INITIAL_ROOMS_SIZE)
 
-    #TESTS FOR Users
-    def test_add_user(self):
+    # Test _create_room_object method.
+    def test_create_room_object(self):
         '''
-        Test that I can add new user
+        Check that the method _create_room_object works properly and 
+        return adequate values for the first database row. 
+        NOTE: Do not use Connection instance but call directly SQL.
         '''
-        print '(' + self.test_add_user.__name__ + ')', \
-            self.test_add_user.__doc__
-        username = self.connection.add_user(NEW_USER, USER_DICT_CORRECT_DATA)
-        self.assertIsNotNone(username)
-        self.assertEquals(username, NEW_USER)
-        #Check that user is really created
-        # Create the SQL Statement
-        keys_on = 'PRAGMA foreign_keys = ON'
-        query = "SELECT * FROM Users WHERE username = '%s'" % NEW_USER
-        # Connects to the database.
-        con = self.connection.con
-        with con:
-            # Cursor and row initialization
-            con.row_factory = sqlite3.Row
-            cur = con.cursor()
-            # Provide support for foreign keys
-            cur.execute(keys_on)
-            # Execute main SQL Statement
-            cur.execute(query)
-            users = cur.fetchall()
-            # Assert
-            self.assertEquals(len(users), 1)
-
-    def test_add_existing_user(self):
-        '''
-        Test that I cannot add two users with the same username
-        '''
-        print '(' + self.test_add_existing_user.__name__ + ')', \
-            self.test_add_existing_user.__doc__
-        username = self.connection.add_user(EXSISTING_USER, USER_DICT_CORRECT_DATA)
-        self.assertIsNone(username)
-
-    def test_delete_user(self):
-        '''
-        Test that the user "para" is deleted
-        '''
-        print '(' + self.test_delete_user.__name__ + ')', \
-            self.test_delete_user.__doc__
-        resp = self.connection.delete_user(EXSISTING_USER)
-        self.assertTrue(resp)
-        # Check that the user has been really deleted from db
-        # Create the SQL Statement
-        keys_on = 'PRAGMA foreign_keys = ON'
-        query = "SELECT * FROM Users WHERE username = '%s'" % EXSISTING_USER
-        # Connects to the database.
-        con = self.connection.con
-        with con:
-            # Cursor and row initialization
-            con.row_factory = sqlite3.Row
-            cur = con.cursor()
-            # Provide support for foreign keys
-            cur.execute(keys_on)
-            # Execute main SQL Statement
-            cur.execute(query)
-            users = cur.fetchall()
-            # Assert
-            self.assertEquals(len(users), 0)
-
-    def test_delete_user_noexistingnickname(self):
-        '''
-        Test delete_user with the non-existing user "CrazyBoy95"
-        '''
-        print '(' + self.test_delete_user_noexistingnickname.__name__ + ')', \
-            self.test_delete_user_noexistingnickname.__doc__
-        # Test with an existing user
-        resp = self.connection.delete_user(NOT_EXSISTING_USER)
-        self.assertFalse(resp)
-
-    # TESTS FOR Bookings
-    def test_bookings_table_created(self):
-        '''
-        Checks that the table initially contains 2 bookings (check
-        tellus_data_dump.sql). NOTE: Do not use Connection instance but
-        call directly SQL.
-        '''
-        print '('+self.test_bookings_table_created.__name__+')', \
-              self.test_bookings_table_created.__doc__
+        print '('+self.test_create_room_object.__name__+')', \
+              self.test_create_room_object.__doc__
         #Create the SQL Statement
-        keys_on = 'PRAGMA foreign_keys = ON'
-        query = 'SELECT * FROM Bookings'
-        #Connects to the database.
+        query = 'SELECT * FROM Rooms'
+        #Get the sqlite3 con from the Connection instance
         con = self.connection.con
         with con:
             #Cursor and row initialization
             con.row_factory = sqlite3.Row
             cur = con.cursor()
-            #Provide support for foreign keys
-            cur.execute(keys_on)
             #Execute main SQL Statement
             cur.execute(query)
-            users = cur.fetchall()
-            #Assert
-            self.assertEquals(len(users), INITIAL_SIZE_BOOKING)
+            #Extract the 1 row
+            row = cur.fetchone()
+        #Test the method _create_room_object
+        room = self.connection._create_room_object(row)
+        self.assertDictContainsSubset(room, ROOM1)
 
-    def test_get_bookings(self):
+    #TESTS FOR Rooms
+    def test_get_rooms(self):
         '''
-        Test that get_bookings work correctly without roomname
+        Test that get_rooms work correctly and extract required room info
         '''
-        print '(' + self.test_get_bookings.__name__ + ')', self.test_get_bookings.__doc__
-        bookings = self.connection.get_bookings()
-        # Check that the size is correct
-        self.assertEquals(len(bookings), INITIAL_SIZE_BOOKING)
-        # Iterate through bookings and check if the bookings with ROOMNAME1 and
-        # ROOMNAME2 are correct:
-        for booking in bookings:
-            if booking['roomname'] == ROOMNAME1:
-                self.assertEquals(len(booking), 7)
-                self.assertDictContainsSubset(booking, BOOKING1)
-            elif booking['roomname'] == ROOMNAME2:
-                self.assertEquals(len(booking), 7)
-                self.assertDictContainsSubset(booking, BOOKING2)
+        print '('+self.test_get_rooms.__name__+')', \
+              self.test_get_rooms.__doc__
+        rooms = self.connection.get_rooms()
+        #Check that the size is correct
+        self.assertEquals(len(rooms), INITIAL_ROOMS_SIZE)
+        #Iterate through all rooms and check if the rooms with ROOM_NAME_1 and
+        #ROOM_NAME_3 are correct format:
+        for room in rooms:
+            if room['roomname'] == ROOM_NAME_1:
+                self.assertDictContainsSubset(room, ROOM1)
+            elif room['roomname'] == ROOM_NAME_3:
+                self.assertDictContainsSubset(room, ROOM3)
 
-    def test_get_bookings_specific_roomname(self):
+    def test_modify_room(self):
         '''
-        Get all bookings for roomname "Chill".
-        Check that it includes information for BOOKING2
+        Test that Room #2 Aspire is modifed successful
+        '''
+        print '('+self.test_modify_room.__name__+')', \
+              self.test_modify_room.__doc__
+        #Get the modified Room
+        resp = self.connection.modify_room(ROOM_NAME_2, MODIFY_ROOM2)
+        self.assertEquals(resp, ROOM_NAME_2)
+        
+        #Check that the room has been really modified
+        rooms = self.connection.get_rooms()
+        #Check that the size that, we modify but not ADD new room.
+        self.assertEquals(len(rooms), INITIAL_ROOMS_SIZE)
+        
+        #Check the expected values
+        room_new_picture    = rooms[1]['picture']
+        room_new_resources  = rooms[1]['resources']
+        self.assertEquals(MODIFY_ROOM2['picture'], room_new_picture)
+        self.assertEquals(MODIFY_ROOM2['resources'], room_new_resources)
+        MODIFY_ROOM2['roomid'] = '2'
+        self.assertDictContainsSubset(rooms[1], MODIFY_ROOM2)
 
+    def test_modify_room_with_no_existing_roomname(self):
         '''
-        print '(' + self.test_get_bookings_specific_roomname.__name__ + ')', \
-            self.test_get_bookings_specific_roomname.__doc__
-        bookings = self.connection.get_bookings(roomname=ROOMNAME2)
-        # Check length of the array is correct
-        self.assertEquals(len(bookings), 1)
-        # Check that data is correct
-        self.assertDictContainsSubset(bookings[0], BOOKING2)
+        Test modify_room with roomname 'Parempaa' (no-existing-roomname)
+        '''
+        print '('+self.test_modify_room_with_no_existing_roomname.__name__+')', \
+              self.test_modify_room_with_no_existing_roomname.__doc__
+        #Test with existing Room1
+        resp = self.connection.modify_room(ROOM_WRONG_ROOMNAME, ROOM1)
+        self.assertIsNone(resp)
 
-    def test_get_bookings_wrong_roomname(self):
-        '''
-        Test get_bookings with wrong roomname "Vodka"
-        '''
-        print '(' + self.test_get_bookings_wrong_roomname.__name__ + ')', \
-            self.test_get_bookings_wrong_roomname.__doc__
-        bookings = self.connection.get_bookings(roomname=WRONG_ROOMNAME)
-        # Check length of the array is correct
-        self.assertListEqual(bookings, [])
 
 if __name__ == '__main__':
-    print 'Start running tests'
+    print 'Start running Rooms tests'
     unittest.main()

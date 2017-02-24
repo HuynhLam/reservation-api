@@ -179,6 +179,30 @@ class Connection(object):
         }
 
     def _create_room_object(self, row):
+        '''
+        It takes a database Row and transform it into a python dictionary.
+
+        :param row: The row obtained from the database.
+        :type row: sqlite3.Row
+        :return: a dictionary with the following format:
+
+            .. code-block:: javascript
+
+                {
+                    "roomid": '',
+                    "roomname": '',
+                    "picture": '',
+                    "resources": ''
+                }
+
+            where:
+
+            * ``roomid``: Unique identifying room ID.
+            * ``roomname``: Name of room to be booked.
+            * ``picture``: Image of the room.
+            * ``resources``: Room equiments.
+
+        '''
         return {
             "roomid": str(row["roomID"]),
             "roomname": row["roomName"],
@@ -341,7 +365,7 @@ class Connection(object):
 
             *``roomID``     :ID of the room. INTEGER. UNIQUE.
             *``roomName``   :Name of the room. TEXT. UNIQUE.
-            *``picture``    :Image for the room. BLOB.
+            *``picture``    :Image of the room. BLOB.
             *``resources``  :Room equiments. TEXT.
 
             *There is no FOREIGN KEY.
@@ -380,7 +404,7 @@ class Connection(object):
         #SQL Statement for extracting the roomID from given a roomName
         query1 = 'SELECT roomID from Rooms WHERE roomName = ?'
         #SQL Statement to update the Rooms table
-        query2 = 'UPDATE Rooms SET picture = ?,resources = ? WHERE room_id = ?'
+        query2 = 'UPDATE Rooms SET picture = ?,resources = ? WHERE roomname = ?'
         #temporal variables
         room_id = None
         _picture = room_dict.get('picture', None)
@@ -397,9 +421,8 @@ class Connection(object):
         if row is None:
             return None
         else:
-            room_id = row["roomID"]
             #execute the main statement
-            pvalue = (_picture, _resources, room_id)
+            pvalue = (_picture, _resources, roomName)
             cur.execute(query2, pvalue)
             self.con.commit()
             #Check that we have modified the user
@@ -462,19 +485,19 @@ class Connection(object):
     def modify_booking(self, roomname, date, time, booking_dict):
         pass
 
-    def delete_booking(self, roomname, date, time, booking_dict):
+    def delete_booking(self, roomName, date, time, booking_dict):
         '''
         Delete the booking with id given as parameter.
         :return: True if the booking has been deleted, False otherwise
 
         '''
         #Create the SQL Statements
-        query = "DELETE FROM Bookings WHERE roomname=?, date=?, time=?"
+        query = "DELETE FROM Bookings WHERE roomName=?, date=?, time=?"
         #Cursor and row initialization
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         #Execute the statement to delete
-        pvalue = (roomname, date, time,)
+        pvalue = (roomName, date, time,)
         cur.execute(query, pvalue)
         self.con.commit()
         #Check that it has been deleted
