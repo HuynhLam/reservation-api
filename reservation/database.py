@@ -210,10 +210,16 @@ class Connection(object):
     def get_rooms(self):
         '''
         Extracts all existence rooms in the database.
-        :return: list of Users of the database. Each room instance is a dictionary
-            that contains 1 key: ``roomID``(integer).
-            There is no FOREIGN KEY.
-            None is returned if the database has no rooms.
+        :return:A list of Rooms. Each Room is a dictionary containing
+                the following keys:
+
+            *``roomID``     :ID of the room. INTEGER. UNIQUE.
+            *``roomName``   :Name of the room. TEXT. UNIQUE.
+            *``picture``    :Image for the room. BLOB.
+            *``resources``  :Room equiments. TEXT.
+
+            *There is no FOREIGN KEY.
+            *None is returned if the database has no rooms.
 
         '''
         # SQL query to get the list of existence rooms
