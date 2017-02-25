@@ -24,7 +24,7 @@ For Python the following library is needed.
 
 ### How to Use
 
-* [Cloning Repo](####cloning-repo)
+* [Cloning Repo](#markdown-header-cloning-repo)
 
 #### Cloning Repo
 
