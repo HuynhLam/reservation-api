@@ -25,6 +25,10 @@ For Python the following library is needed.
 ### How to Use
 
 * [Cloning Repo](#markdown-header-cloning-repo)
+* [Checking Structure](#markdown-header-checking-structure)
+* [Creating Database Tables and Populating Them](#markdown-header-creating-database-tables-and-populating-them)
+* [Using Database API](#markdown-header-using-database-api)
+* [Running Tests](#markdown-header-running-tests)
 
 #### Cloning Repo
 
