@@ -81,7 +81,7 @@ class BookingsDBAPITestCase(unittest.TestCase):
     # TESTS FOR Bookings
     def test_bookings_table_created(self):
         '''
-        Checks that the table initially contains 2 bookings (check
+        Checks that the table initially contains 5 bookings (check
         tellus_data_dump.sql). NOTE: Do not use Connection instance but
         call directly SQL.
         '''
@@ -147,12 +147,12 @@ class BookingsDBAPITestCase(unittest.TestCase):
         # Check length of the array is correct
         self.assertListEqual(bookings, [])
 
-    def test_zdelete_booking(self):
+    def test_delete_booking(self):
         '''
         Test that booking at room: 'Stage' on 2017-03-01 10:00 is deleted successfully
         '''
-        print '(' + self.test_zdelete_booking.__name__ + ')', \
-            self.test_zdelete_booking.__doc__
+        print '(' + self.test_delete_booking.__name__ + ')', \
+            self.test_delete_booking.__doc__
         resp = self.connection.delete_booking(BOOKING1['roomname'], int(BOOKING1['date']), int(BOOKING1['time']))
         self.assertTrue(resp)
         # Check is the booking really was deleted
@@ -170,13 +170,16 @@ class BookingsDBAPITestCase(unittest.TestCase):
             bookings = cur.fetchall()
             # Assert, len(bookings)>0 means delete booking was done improperly
             self.assertEquals(len(bookings), 0)
+            if len(bookings)==0:
+                global INITIAL_SIZE_BOOKING
+                INITIAL_SIZE_BOOKING -= 1 
 
-    def test_zdelete_non_exist_booking(self):
+    def test_delete_non_exist_booking(self):
         '''
         Test delete_booking with the non-existing booking at room: 'Vodka' on 2018-12-12,08:00
         '''
-        print '(' + self.test_zdelete_non_exist_booking.__name__ + ')', \
-            self.test_zdelete_non_exist_booking.__doc__
+        print '(' + self.test_delete_non_exist_booking.__name__ + ')', \
+            self.test_delete_non_exist_booking.__doc__
         # Test delete_booking with a non existing booking
         resp = self.connection.delete_booking(NON_EXIST_BOOKING['roomname'], NON_EXIST_BOOKING['date'], NON_EXIST_BOOKING['time'])
         self.assertFalse(resp)
