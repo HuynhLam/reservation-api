@@ -405,8 +405,13 @@ class Connection(object):
         query1 = 'SELECT roomID from Rooms WHERE roomName = ?'
         #SQL Statement to update the Rooms table
         query2 = 'UPDATE Rooms SET picture = ?,resources = ? WHERE roomname = ?'
+        # Check dict
+        if not 'picture' in room_dict:
+            return None
+        if not 'resources' in room_dict:
+            return None
+
         #temporal variables
-        room_id = None
         _picture = room_dict.get('picture', None)
         _resources = room_dict.get('resources', None)
         #Cursor and row initialization
@@ -532,7 +537,71 @@ class Connection(object):
             return None
 
     def modify_booking(self, roomname, date, time, booking_dict):
-        pass
+        '''
+        Modify the information of a booking.
+
+        :param string roomname: The name of the room to book
+        :param string date: The date of the booking to book
+        :param string time: The time of the booking to book
+        :param dict booking: a dictionary with the information to be modified.
+
+        :return: tuple booking: a tuple which includes roomname date and time
+            it returns None if booking is not modify in database.
+
+        '''
+        # Create the SQL Statements
+        # SQL Statement for extracting the bookingID given a bookingID
+        query1 = 'SELECT bookingID from Bookings WHERE roomName = ? AND date = ? AND time = ?'
+        # SQL Statement to create the row in Bookings table
+        query2 = 'UPDATE Bookings SET roomName=?, date=?, time=?, firstName=?,\
+                                    lastName=?, email=?, contactNumber=?\
+                                    WHERE roomName = ? AND date = ? AND time = ?'
+
+        # Check dict
+        if not 'roomname' in booking_dict:
+            return None
+        if not 'date' in booking_dict:
+            return None
+        if not 'time' in booking_dict:
+            return None
+        if not 'firstname' in booking_dict:
+            return None
+        if not 'lastname' in booking_dict:
+            return None
+        if not 'email' in booking_dict:
+            return None
+        if not 'contactnumber' in booking_dict:
+            return None
+
+        #temporal variables
+        _roomname       = booking_dict.get('roomname', None)
+        _date           = booking_dict.get('date', None)
+        _time           = booking_dict.get('time', None)
+        _firstname      = booking_dict.get('firstname', None)
+        _lastname       = booking_dict.get('lastname', None)
+        _email          = booking_dict.get('email', None)
+        _contactnumber  = booking_dict.get('contactnumber', None)
+        # Activate foreign key support
+        self.set_foreign_keys_support()
+        # Cursor and row initialization
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        # Execute the statement to extract the roomname, date, time associated to a bookingID
+        pvalue = (roomname, int(date), int(time))
+        cur.execute(query1, pvalue)
+        # Returns row if already exists
+        row = cur.fetchone()
+        # If there is no booking return None, otherwise update the existence booking
+        if row is None:
+            return None
+        else:
+            # Update the row in Bookings table
+            # Execute the statement
+            pvalue = (_roomname, _date, _time, _firstname, _lastname, _email, _contactnumber, roomname, int(date), int(time))
+            cur.execute(query2, pvalue)
+            self.con.commit()
+            # We do not do any comprobation and return the roomname date time
+            return _roomname, _date, _time
 
     def delete_booking(self, roomName, date, time):
         '''
