@@ -514,7 +514,7 @@ class Connection(object):
             return None
 
         # Activate foreign key support
-        self.set_foreign_keys_support()
+        #self.set_foreign_keys_support()
         # Cursor and row initialization
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
@@ -582,7 +582,7 @@ class Connection(object):
         _email          = booking_dict.get('email', None)
         _contactnumber  = booking_dict.get('contactnumber', None)
         # Activate foreign key support
-        self.set_foreign_keys_support()
+        #self.set_foreign_keys_support()
         # Cursor and row initialization
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()

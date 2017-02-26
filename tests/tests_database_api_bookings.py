@@ -66,6 +66,19 @@ NEW_BOOKING = {'roomname': 'Chill',
                     'lastname': 'Narendradhipa',
                     'email': 'paramartha.n@ee.oulu.fi',
                     'contactnumber': '0417511944'}
+MODIFY_BOOKING_ROOMNAME = 'Aspire'
+MODIFY_BOOKING_DATE = '20171015'
+MODIFY_BOOKING_TIME = '1135'
+MODIFY_BOOKING = {'roomname': 'Stage',
+                    'date': '20170803',
+                    'time': '1151',
+                    'firstname': 'Lam',
+                    'lastname': 'Huynh',
+                    'email': 'lam.huynh@ee.oulu.fi',
+                    'contactnumber': '0411322922'}
+MODIFY_NONEXISTING_BOOKING_ROOMNAME = 'Vodka'
+MODIFY_NONEXISTING_BOOKING_DATE = '20180716'
+MODIFY_NONEXISTING_BOOKING_TIME = '1510'
 INITIAL_SIZE_BOOKING = 5
 
 
@@ -240,6 +253,54 @@ class BookingsDBAPITestCase(unittest.TestCase):
         print '(' + self.test_add_booking_empty_dict.__name__ + ')', \
             self.test_add_booking_empty_dict.__doc__
         booking = self.connection.add_booking(ROOMNAME1, BOOKING1['date'], BOOKING1['time'], {})
+        self.assertIsNone(booking)
+
+    def test_modify_booking(self):
+        '''
+        Test that I successfully modified a booking
+        '''
+        print '(' + self.test_modify_booking.__name__ + ')', \
+            self.test_modify_booking.__doc__
+        booking = self.connection.modify_booking(MODIFY_BOOKING_ROOMNAME, MODIFY_BOOKING_DATE, MODIFY_BOOKING_TIME, MODIFY_BOOKING)
+        #Check is the modified OK
+        self.assertIsNotNone(booking)
+        #If it is OK, check the return values
+        self.assertTupleEqual((MODIFY_BOOKING['roomname'], MODIFY_BOOKING['date'], MODIFY_BOOKING['time']), booking)
+        # Check that booking is really modified
+        # Create the SQL Statement
+        query = "SELECT * FROM Bookings WHERE roomName=? AND date=? AND time=?"
+        # Connects to the database.
+        con = self.connection.con
+        with con:
+            # Cursor and row initialization
+            con.row_factory = sqlite3.Row
+            cur = con.cursor()
+            # Execute main SQL Statement
+            pvalue = (MODIFY_BOOKING['roomname'], int(MODIFY_BOOKING['date']), int(MODIFY_BOOKING['time']))
+            cur.execute(query, pvalue)
+            booking = cur.fetchall()
+            # Assert
+            self.assertEquals(len(booking), 1)
+            if len(booking) == 1:
+                global INITIAL_SIZE_BOOKING
+                INITIAL_SIZE_BOOKING += 1
+
+    def test_modify_nonexisting_booking(self):
+        '''
+        Test that I cannot modify a non existing booking
+        '''
+        print '(' + self.test_modify_nonexisting_booking.__name__ + ')', \
+            self.test_modify_nonexisting_booking.__doc__
+        booking = self.connection.modify_booking(MODIFY_NONEXISTING_BOOKING_ROOMNAME, MODIFY_NONEXISTING_BOOKING_DATE, MODIFY_NONEXISTING_BOOKING_TIME, MODIFY_BOOKING)
+        self.assertIsNone(booking)
+
+    def test_modify_booking_empty_dict(self):
+        '''
+        Test that I cannot modify booking with empty dict
+        '''
+        print '(' + self.test_modify_booking_empty_dict.__name__ + ')', \
+            self.test_modify_booking_empty_dict.__doc__
+        booking = self.connection.modify_booking(NEW_BOOKING_ROOMNAME, NEW_BOOKING_DATE, NEW_BOOKING_TIME, {})
         self.assertIsNone(booking)
 
 if __name__ == '__main__':
