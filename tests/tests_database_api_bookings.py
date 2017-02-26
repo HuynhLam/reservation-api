@@ -49,13 +49,23 @@ BOOKING2 = {'roomname': 'Chill',
             'lastname': 'Narendradhipa',
             'email': 'paramartha.n@ee.oulu.fi',
             'contactnumber': '0417511944'}
-NON_EXIST_BOOKING = {   'roomname': 'Vodka',
+NON_EXIST_BOOKING = {'roomname': 'Vodka',
                         'date': '20181212',
                         'time': '0800',
                         'firstname': 'Paramartha',
                         'lastname': 'Narendradhipa',
                         'email': 'paramartha.n@ee.oulu.fi',
                         'contactnumber': '0417511944'}
+NEW_BOOKING_ROOMNAME = 'Stage'
+NEW_BOOKING_DATE = '20181231'
+NEW_BOOKING_TIME = '0800'
+NEW_BOOKING = {'roomname': 'Chill',
+                    'date': '20181231',
+                    'time': '0800',
+                    'firstname': 'Paramartha',
+                    'lastname': 'Narendradhipa',
+                    'email': 'paramartha.n@ee.oulu.fi',
+                    'contactnumber': '0417511944'}
 INITIAL_SIZE_BOOKING = 5
 
 
@@ -116,10 +126,10 @@ class BookingsDBAPITestCase(unittest.TestCase):
         # Iterate through bookings and check if the bookings with ROOMNAME1 and
         # ROOMNAME2 are correct:
         for booking in bookings:
-            if booking['roomname'] == ROOMNAME1:
+            if booking['roomname'] == ROOMNAME1 and booking['firstname'] == BOOKING1['firstname']:
                 self.assertEquals(len(booking), 7)
                 self.assertDictContainsSubset(booking, BOOKING1)
-            elif booking['roomname'] == ROOMNAME2:
+            elif booking['roomname'] == ROOMNAME2 and booking['firstname'] == BOOKING2['firstname']:
                 self.assertEquals(len(booking), 7)
                 self.assertDictContainsSubset(booking, BOOKING2)
 
@@ -183,6 +193,54 @@ class BookingsDBAPITestCase(unittest.TestCase):
         # Test delete_booking with a non existing booking
         resp = self.connection.delete_booking(NON_EXIST_BOOKING['roomname'], NON_EXIST_BOOKING['date'], NON_EXIST_BOOKING['time'])
         self.assertFalse(resp)
+
+    def test_add_booking(self):
+        '''
+        Test that I can add new booking
+        '''
+        print '(' + self.test_add_booking.__name__ + ')', \
+            self.test_add_booking.__doc__
+        booking = self.connection.add_booking(NEW_BOOKING_ROOMNAME, NEW_BOOKING_DATE, NEW_BOOKING_TIME, NEW_BOOKING)
+        self.assertIsNotNone(booking)
+        self.assertTupleEqual((NEW_BOOKING_ROOMNAME, NEW_BOOKING_DATE, NEW_BOOKING_TIME), booking)
+        # Check that booking is really created
+        # Create the SQL Statement
+        keys_on = 'PRAGMA foreign_keys = ON'
+        query = "SELECT * FROM Bookings WHERE roomName = '%s' AND date = %i AND time = %i" % (NEW_BOOKING_ROOMNAME, int(NEW_BOOKING_DATE), int(NEW_BOOKING_TIME))
+        # Connects to the database.
+        con = self.connection.con
+        with con:
+            # Cursor and row initialization
+            con.row_factory = sqlite3.Row
+            cur = con.cursor()
+            # Provide support for foreign keys
+            cur.execute(keys_on)
+            # Execute main SQL Statement
+            cur.execute(query)
+            booking = cur.fetchall()
+            # Assert
+            self.assertEquals(len(booking), 1)
+            if len(booking) == 1:
+                global INITIAL_SIZE_BOOKING
+                INITIAL_SIZE_BOOKING += 1
+
+    def test_add_existing_booking(self):
+        '''
+        Test that I cannot add two booking with the same room name, date, and time
+        '''
+        print '(' + self.test_add_existing_booking.__name__ + ')', \
+            self.test_add_existing_booking.__doc__
+        booking = self.connection.add_booking(ROOMNAME1, BOOKING1['date'], BOOKING1['time'], BOOKING1)
+        self.assertIsNone(booking)
+
+    def test_add_booking_empty_dict(self):
+        '''
+        Test that I cannot add booking with empty dict
+        '''
+        print '(' + self.test_add_booking_empty_dict.__name__ + ')', \
+            self.test_add_booking_empty_dict.__doc__
+        booking = self.connection.add_booking(ROOMNAME1, BOOKING1['date'], BOOKING1['time'], {})
+        self.assertIsNone(booking)
 
 if __name__ == '__main__':
     print 'Start running tests'
