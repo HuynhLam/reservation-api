@@ -27,12 +27,7 @@ CREATE TABLE "Bookings" (
 	`lastName`	TEXT,
 	`email`	TEXT,
 	`contactNumber`	TEXT,
-	PRIMARY KEY(`bookingID`),
-	FOREIGN KEY(`roomName`) REFERENCES `Room`(`roomID`),
-	FOREIGN KEY(`firstName`) REFERENCES `User`(`userID`),
-	FOREIGN KEY(`lastName`) REFERENCES `User`(`userID`),
-	FOREIGN KEY(`email`) REFERENCES `User`(`userID`),
-	FOREIGN KEY(`contactNumber`) REFERENCES `User`(`userID`)
+	PRIMARY KEY(`bookingID`)
 );
 COMMIT;
 PRAGMA foreign_keys=ON;

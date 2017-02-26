@@ -479,8 +479,57 @@ class Connection(object):
             bookings.append(self._create_booking_object(row))
         return bookings
 
-    def add_booking(self, booking_dict):
-        pass
+    def add_booking(self, roomname, date, time, booking_dict):
+        '''
+        Add the information of a booking.
+
+        :param string roomname: The name of the room to book
+        :param string date: The date of the booking to book
+        :param string time: The time of the booking to book
+        :param dict booking: a dictionary with the information to be modified.
+
+        :return: tuple booking: a tuple which includes roomname date and time
+            it returns None if booking is not added to database.
+
+        '''
+        # Create the SQL Statements
+        # SQL Statement for extracting the bookingID given a bookingID
+        query1 = 'SELECT bookingID from Bookings WHERE roomName = ? AND date = ? AND time = ?'
+        # SQL Statement to create the row in  Bookings table
+        query2 = 'INSERT INTO Bookings(roomName, date, time, firstName, lastName, email, contactNumber)\
+                                        VALUES(?,?,?,?,?,?,?)'
+        # Check dict
+        if not 'firstname' in booking_dict:
+            return None
+        if not 'lastname' in booking_dict:
+            return None
+        if not 'email' in booking_dict:
+            return None
+        if not 'contactnumber' in booking_dict:
+            return None
+
+        # Activate foreign key support
+        self.set_foreign_keys_support()
+        # Cursor and row initialization
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        # Execute the statement to extract the roomname, date, time associated to a bookingID
+        pvalue = (roomname, int(date), int(time))
+        cur.execute(query1, pvalue)
+        # Returns row if already exists
+        row = cur.fetchone()
+        # If there is no booking add rows in Bookings and booking details
+        if row is None:
+            # Add the row in Bookings table
+            # Execute the statement
+            pvalue = (roomname, int(date), int(time), booking_dict['firstname'], booking_dict['lastname'],
+                      booking_dict['email'], booking_dict['contactnumber'])
+            cur.execute(query2, pvalue)
+            self.con.commit()
+            # We do not do any comprobation and return the roomname date time
+            return roomname, date, time
+        else:
+            return None
 
     def modify_booking(self, roomname, date, time, booking_dict):
         pass
