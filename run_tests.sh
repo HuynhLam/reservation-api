@@ -11,7 +11,7 @@ DB_SCHEMA_FILE_NAME="tellus_schema_dump.sql"
 DB_DATA_FILE_NAME="tellus_data_dump.sql"
 DB_TEST_FILE_NAME="test_tellus.db"
 TEST_FOLDER="tests/"
-declare -a test_files=("tests_database_api_bookings" "tests_database_api_users")
+declare -a test_files=("tests_database_api_bookings" "tests_database_api_users" "tests_database_api_rooms")
 
 function create_test_db {
     ## Check database folder exists
