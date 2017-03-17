@@ -1233,3 +1233,459 @@ The algorithm might receive 3 arguments to filter the results: the amount of mes
             }
             
             **TO BE DEFINED BY STUDENTS**
+
+
+# Group Booking
+
+All these resources use the [Booking Profile](reference/profiles/booking_profile).
+
+In addition all error messages follow the profile defined [Error Profile](reference/profiles/error_profile)
+
+
+## Bookings List [/tellus/api/bookings/{roomname}/]
+
+A list of all Bookings in a specific room. 
+
+
+### List Bookings [GET]
+
+Get a list of all bookings by roomname in the system
+
++ Relation: self    
++ Request
+    
+    + Headers
+    
+            Accept: application/vnd.mason+json
+    
++ Response 200 (application/vnd.mason+json)
+
+    List Bookings was successfully retrieved.
+   
+    + Body 
+    
+            {
+                "@namespaces": {
+                    "tellus": {
+                        "name": "/tellus/link-relations/"
+                    }
+                },
+                
+                "items": [
+                    {
+                        "bookingid": "", 
+                        "roomname": "",
+                        "username": "",
+                        "time": "",
+                        "@controls": {
+                            "self": {
+                                "href": "/tellus/api/booking/ROOMNAME"
+                            },
+                            "profile": {
+                                "href": "/profiles/booking_profile/"
+                            }                            
+                        }
+                    },
+                    {
+                        "bookingid": "", 
+                        "roomname": "",
+                        "username": "",
+                        "time": "",
+                        "@controls": {
+                            "self": {
+                                "href": "/tellus/api/booking/ROOMNAME"
+                            },
+                            "profile": {
+                                "href": "/profiles/booking_profile/"
+                            }                            
+                        }
+                    }
+                ],
+                
+                "@controls": {
+                    "self": {
+                        "href": "/tellus/api/booking/ROOMNAME"
+                    },
+                    "forum:add-message": {
+                        "title": "Create message",
+                        "href": "/forum/api/messages/",
+                        "encoding": "json",
+                        "method": "POST",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "headline": {
+                                    "title": "Headline",
+                                    "description": "Message headline",
+                                    "type": "string"
+                                },
+                                "articleBody": {
+                                    "title": "Contents",
+                                    "description": "Message contents",
+                                    "type": "string"
+                                },
+                                "author": {
+                                    "title": "Author",
+                                    "description": "Nickname of the message author",
+                                    "type": "string"
+                                },
+                            },
+                            "required": ["headline", "articleBody"]
+                        }
+                    },
+                    "forum:users-all": {
+                        "title": "List users", 
+                        "href": "/forum/api/users/"
+                    }
+                }
+            }
+     
++ Response 404 (application/vnd.mason+json)
+
+    List Bookings is empty. No Booking by this roomname. 
+    
+    + Body
+    
+            {
+                "@error": {
+                    "@message": "Empty list"
+                    "@messages": [
+                        "There is no booking for this room yet."
+                    ]
+                }
+                "resource_url": "/tellus/api/bookings/Chill/"
+            }
+
+
+## Booking [/tellus/api/bookings/]
+
+A booking stored in the Bookings database. A booking contains roomname which the booking will place, information of user
+who currently make the booking (include username, firstname, lastname, email and contact number), the time the booking will
+happen and a unique id that identifies this booking in the database.
+
+
+### Modify an existence booking [PUT]       
+
+Modify an existence booking by roomname, the time information will be change.  
+
++ Request (application/json)
+
+    + Headers
+    
+            Accept: application/vnd.mason+json
+        
+    + Body 
+    
+            {
+                "time": ""
+
+            }
+
++ Response 204
+
+    The booking is modified correctly
+        
+    + Body
+
++ Response 400 (application/vnd.mason+json)
+
+    The booking is not well formed. Some of the parameters is not correctly received. 
+    
+    + Body
+    
+            {
+                "@error": {
+                    "@message": "Wrong request format",
+                    "@messages": [
+                        "Be sure you include all mandatory properties"
+                    ]
+                }
+                "resource_url: "/tellus/api/bookings/{roomname}/"
+            }
+
++ Response 404 (application/vnd.mason+json)
+
+    The booking with id `messageid` does not exist in the database.
+        
+    + Body 
+    
+            {
+                "@error": {
+                    "@message": "Message does not exist"
+                    "@messages": [
+                        "The wanted-changing booking is non-exist."
+                    ]
+                }
+                "resource_url": "/tellus/api/bookings/{roomname}/"
+            }
+
++ Response 415 (application/vnd.mason+json)
+
+    The server cannot understand the format of the response.
+    
+    + Body 
+    
+            {
+                "@error": {
+                    "@message": "Unsupported media type"
+                    "@messages": [
+                        "Use a JSON compatible format"
+                    ]
+                }
+                "resource_url": "/tellus/api/bookings/{roomname}/"
+            }
+
++ Response 500  (application/vnd.mason+json)
+
+    The server cannot store the booking in the database.
+    
+    + Body 
+
+            {
+                "@error": {
+                    "@message": "Problem with the database"
+                    "@messages": [
+                        "Cannot access the database"
+                    ]
+                }
+                "resource_url": "/tellus/api/bookings/{roomname}/"
+            }
+
+
+### Create a new booking [POST]       
+
+Create a new booking. 
+
++ Request (application/json)
+
+    + Headers
+    
+            Accept: application/vnd.mason+json
+        
+    + Body 
+    
+            {
+                "roomname": "Aspire",
+                "username": "YoungUno",
+                "time": "",
+                "firstname": "Young",
+                "lastname": "Uno",
+                "email": "uyoung@hothot.com",
+                "contactnumber": "4165971265"
+            }
+
++ Response 201
+
+    The booking is created correctly. 
+        
+    + Headers
+                
+            Location: URL of the new created resource
+
++ Response 400 (application/vnd.mason+json)
+
+    The booking is not well formed. Some of the parameters is not correctly received. 
+    
+    + Body
+    
+            {
+                "@error": {
+                    "@message": "Wrong request format"
+                    "@messages": [
+                        "There is something wrong with the booking format."
+                    ]
+                }
+                "resource_url": "/tellus/api/bookings/"
+            }
+
++ Response 409 (application/vnd.mason+json)
+
+    Try to create a new booking similar with an existence booking.
+    
+    + Body
+    
+            {
+                "@error": {
+                    "@message": "Conflict booking",
+                    "@messages": [
+                        "The new booking was conflicted with an existence booking."
+                    ]
+                }
+                "resource_url: "/forum/api/users/"
+            }
+
++ Response 415 (application/vnd.mason+json)
+
+    The server cannot understand the format of the response.
+    
+    + Body 
+    
+            {
+                "@error": {
+                    "@message": "Unsupported media type"
+                    "@messages": [
+                        "Use a JSON compatible format"
+                    ]
+                }
+                "resource_url": "/tellus/api/bookings/"
+            }
+
++ Response 500  (application/vnd.mason+json)
+
+    The server cannot store the booking in the database.
+    
+    + Body 
+
+            {
+                "@error": {
+                    "@message": "Problem with the database"
+                    "@messages": [
+                        "Cannot access the database"
+                    ]
+                }
+                "resource_url": "/tellus/api/bookings/"
+            }
+
+
+### Delete a booking [DELETE]
+
+Delete a booking from the system
+
++ Request
+    
+    + Headers
+    
+            Accept: application/vnd.mason+json
+    
++ Response 204
+
+    The booking was successfully deleted
+        
+    + Body 
+        
+
++ Response 404 (application/vnd.mason+json)
+
+    The booking does not exist in the database.
+        
+    + Body 
+    
+            {
+                "@error": {
+                    "@message": "Booking does not exist"
+                    "@messages": [
+                        "There is no a booking to delete"
+                    ]
+                }
+                "resource_url": "/tellus/api/bookings/{booking_id}/"
+            }
+
+
+### History Bookings [GET]
+
+Get a list of 30 latest successful bookings in the system
+
++ Relation: self    
++ Request
+    
+    + Headers
+    
+            Accept: application/vnd.mason+json
+    
++ Response 200 (application/vnd.mason+json)
+
+    List Bookings was successfully retrieved.
+   
+    + Body 
+    
+            {
+                "@namespaces": {
+                    "tellus": {
+                        "name": "/tellus/link-relations/"
+                    }
+                },
+                
+                "items": [
+                    {
+                        "bookingid": "", 
+                        "roomname": "",
+                        "username": "",
+                        "time": "",
+                        "@controls": {
+                            "self": {
+                                "href": "/tellus/api/booking/ROOMNAME"
+                            },
+                            "profile": {
+                                "href": "/profiles/booking_profile/"
+                            }                            
+                        }
+                    },
+                    {
+                        "bookingid": "", 
+                        "roomname": "",
+                        "username": "",
+                        "time": "",
+                        "@controls": {
+                            "self": {
+                                "href": "/tellus/api/booking/ROOMNAME"
+                            },
+                            "profile": {
+                                "href": "/profiles/booking_profile/"
+                            }                            
+                        }
+                    }
+                ],
+                
+                "@controls": {
+                    "self": {
+                        "href": "/tellus/api/booking/ROOMNAME"
+                    },
+                    "forum:add-message": {
+                        "title": "Create message",
+                        "href": "/forum/api/messages/",
+                        "encoding": "json",
+                        "method": "POST",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "headline": {
+                                    "title": "Headline",
+                                    "description": "Message headline",
+                                    "type": "string"
+                                },
+                                "articleBody": {
+                                    "title": "Contents",
+                                    "description": "Message contents",
+                                    "type": "string"
+                                },
+                                "author": {
+                                    "title": "Author",
+                                    "description": "Nickname of the message author",
+                                    "type": "string"
+                                },
+                            },
+                            "required": ["headline", "articleBody"]
+                        }
+                    },
+                    "forum:users-all": {
+                        "title": "List users", 
+                        "href": "/forum/api/users/"
+                    }
+                }
+            }
+     
++ Response 404 (application/vnd.mason+json)
+
+    History Bookings is empty. Not any successful bookings in database. 
+    
+    + Body
+    
+            {
+                "@error": {
+                    "@message": "Empty list"
+                    "@messages": [
+                        "There is no booking for this room yet."
+                    ]
+                }
+                "resource_url": "/tellus/api/bookings/history/"
+            }
