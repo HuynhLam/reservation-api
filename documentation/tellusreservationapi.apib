@@ -1242,14 +1242,21 @@ All these resources use the [Booking Profile](reference/profiles/booking_profile
 In addition all error messages follow the profile defined [Error Profile](reference/profiles/error_profile)
 
 
-## Bookings List [/tellus/api/bookings/{roomname}/]
+## Bookings List [/tellus/api/bookings/]
 
-A list of all Bookings in a specific room. 
+A list of all Bookings. 
 
 
-### List Bookings [GET]
 
-Get a list of all bookings by roomname in the system
+## Booking [/tellus/api/bookings/{name}/]
+
+A booking stored in the Bookings database. A booking contains room name which the booking will place, information of user
+who currently make the booking (include username, firstname, lastname, email and contact number), the time the booking will
+happen and a unique id that identifies this booking in the database.
+
+### Booking [GET]
+
+Get a list of all bookings by room name in the system
 
 + Relation: self    
 + Request
@@ -1273,13 +1280,11 @@ Get a list of all bookings by roomname in the system
                 
                 "items": [
                     {
-                        "bookingid": "", 
-                        "roomname": "",
-                        "username": "",
-                        "time": "",
+                        "name": "Stage",
+                        "username": "Onur", 
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/booking/ROOMNAME"
+                                "href": "/tellus/api/bookings/Stage/"
                             },
                             "profile": {
                                 "href": "/profiles/booking_profile/"
@@ -1287,13 +1292,11 @@ Get a list of all bookings by roomname in the system
                         }
                     },
                     {
-                        "bookingid": "", 
-                        "roomname": "",
-                        "username": "",
-                        "time": "",
+                        "name": "Aspire",
+                        "username": "Lam",
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/booking/ROOMNAME"
+                                "href": "/tellus/api/booking/Aspire/"
                             },
                             "profile": {
                                 "href": "/profiles/booking_profile/"
@@ -1304,45 +1307,116 @@ Get a list of all bookings by roomname in the system
                 
                 "@controls": {
                     "self": {
-                        "href": "/tellus/api/booking/ROOMNAME"
+                        "href": "/tellus/api/bookings/{name}/"
                     },
-                    "forum:add-message": {
-                        "title": "Create message",
-                        "href": "/forum/api/messages/",
+                    "tellus:add-booking" {
+                        "title": "Create booking",
+                        "href": "/forum/api/bookings/",
                         "encoding": "json",
                         "method": "POST",
                         "schema": {
                             "type": "object",
                             "properties": {
-                                "headline": {
-                                    "title": "Headline",
-                                    "description": "Message headline",
+                                "username": {
+                                    "title": "User Name",
+                                    "description": "Username of the booking's owner",
                                     "type": "string"
                                 },
-                                "articleBody": {
-                                    "title": "Contents",
-                                    "description": "Message contents",
+                                "bookingTime": {
+                                    "title": "Booking Time",
+                                    "description": "Date and time of the booking",
                                     "type": "string"
                                 },
-                                "author": {
-                                    "title": "Author",
-                                    "description": "Nickname of the message author",
+                                "email": {
+                                    "title": "Email",
+                                    "description": "Email of the booking's owner",
+                                    "type": "string"
+                                },
+                                "familyName": {
+                                    "title": "Family Name",
+                                    "description": "Family Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "givenName": {
+                                    "title": "Given Name",
+                                    "description": "Given Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "telephone": {
+                                    "title": "Telephone",
+                                    "description": "Telephone number of the booking's owner",
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "title": "Room name",
+                                    "description": "Room name which the booking take place",
                                     "type": "string"
                                 },
                             },
-                            "required": ["headline", "articleBody"]
+                            "required": ["username", "bookingTime", "name"]
                         }
                     },
-                    "forum:users-all": {
-                        "title": "List users", 
-                        "href": "/forum/api/users/"
+                    "tellus:modify-booking" {
+                        "title": "Create message",
+                        "href": "/forum/api/messages/",
+                        "encoding": "json",
+                        "method": "PUT",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "username": {
+                                    "title": "User Name",
+                                    "description": "Username of the booking's owner",
+                                    "type": "string"
+                                },
+                                "bookingTime": {
+                                    "title": "Booking Time",
+                                    "description": "Date and time of the booking",
+                                    "type": "string"
+                                },
+                                "email": {
+                                    "title": "Email",
+                                    "description": "Email of the booking's owner",
+                                    "type": "string"
+                                },
+                                "familyName": {
+                                    "title": "Family Name",
+                                    "description": "Family Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "givenName": {
+                                    "title": "Given Name",
+                                    "description": "Given Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "telephone": {
+                                    "title": "Telephone",
+                                    "description": "Telephone number of the booking's owner",
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "title": "Room name",
+                                    "description": "Room name which the booking take place",
+                                    "type": "string"
+                                },
+                            },
+                            "required": ["username", "bookingTime", "name"]
+                        }
+                    },
+                    "tellus:delete" {
+                        "title": "Create message",
+                        "href": "/tellus/api/bookings/{booking_id}/"
+                    },
+                    "tellus:rooms-all" {
+                        "title": "List rooms",
+                        "href": "/tellus/api/rooms/"
                     }
                 }
             }
      
 + Response 404 (application/vnd.mason+json)
 
-    List Bookings is empty. No Booking by this roomname. 
+    List Bookings is empty. No Booking by this room name. 
     
     + Body
     
@@ -1357,16 +1431,9 @@ Get a list of all bookings by roomname in the system
             }
 
 
-## Booking [/tellus/api/bookings/]
-
-A booking stored in the Bookings database. A booking contains roomname which the booking will place, information of user
-who currently make the booking (include username, firstname, lastname, email and contact number), the time the booking will
-happen and a unique id that identifies this booking in the database.
-
-
 ### Modify an existence booking [PUT]       
 
-Modify an existence booking by roomname, the time information will be change.  
+Modify an existence booking by room name, the time information will be change.  
 
 + Request (application/json)
 
@@ -1377,8 +1444,13 @@ Modify an existence booking by roomname, the time information will be change.
     + Body 
     
             {
-                "time": ""
-
+                "username": "YoungUno",
+                "bookingTime": "2002-05-30T09:00:00+02:00",
+                "email": "uyoung@cool.com",
+                "familyName": "Young",
+                "givenName": "Uno",
+                "telephone": "4165971265"
+                "name": "Aspire",
             }
 
 + Response 204
@@ -1400,7 +1472,7 @@ Modify an existence booking by roomname, the time information will be change.
                         "Be sure you include all mandatory properties"
                     ]
                 }
-                "resource_url: "/tellus/api/bookings/{roomname}/"
+                "resource_url: "/tellus/api/bookings/{name}/"
             }
 
 + Response 404 (application/vnd.mason+json)
@@ -1416,7 +1488,7 @@ Modify an existence booking by roomname, the time information will be change.
                         "The wanted-changing booking is non-exist."
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/{roomname}/"
+                "resource_url": "/tellus/api/bookings/{name}/"
             }
 
 + Response 415 (application/vnd.mason+json)
@@ -1432,7 +1504,7 @@ Modify an existence booking by roomname, the time information will be change.
                         "Use a JSON compatible format"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/{roomname}/"
+                "resource_url": "/tellus/api/bookings/{name}/"
             }
 
 + Response 500  (application/vnd.mason+json)
@@ -1448,7 +1520,7 @@ Modify an existence booking by roomname, the time information will be change.
                         "Cannot access the database"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/{roomname}/"
+                "resource_url": "/tellus/api/bookings/{name}/"
             }
 
 
@@ -1465,13 +1537,13 @@ Create a new booking.
     + Body 
     
             {
-                "roomname": "Aspire",
                 "username": "YoungUno",
-                "time": "",
-                "firstname": "Young",
-                "lastname": "Uno",
-                "email": "uyoung@hothot.com",
-                "contactnumber": "4165971265"
+                "bookingTime": "2002-05-30T09:00:00+02:00",
+                "email": "uyoung@cool.com",
+                "familyName": "Young",
+                "givenName": "Uno",
+                "telephone": "4165971265"
+                "name": "Aspire",
             }
 
 + Response 201
@@ -1511,7 +1583,7 @@ Create a new booking.
                         "The new booking was conflicted with an existence booking."
                     ]
                 }
-                "resource_url: "/forum/api/users/"
+                "resource_url: "/forum/api/bookings/"
             }
 
 + Response 415 (application/vnd.mason+json)
@@ -1581,17 +1653,26 @@ Delete a booking from the system
             }
 
 
-### History Bookings [GET]
-
+## History Bookings [/tellus/api/bookings/history{?limit}]
 Get a list of 30 latest successful bookings in the system
 
-+ Relation: self    
+The limit parameter uses to create constrain of the number of successful booking returned.
+Default value of 'limit' is 30 bookings.
+
++ Parameters
+
+    + limit (number, optional) - The maximum number of bookings to return.
+        + Default: `30`
+
+### History [GET]
+
++ Relation: self
 + Request
     
     + Headers
     
             Accept: application/vnd.mason+json
-    
+
 + Response 200 (application/vnd.mason+json)
 
     List Bookings was successfully retrieved.
@@ -1607,13 +1688,11 @@ Get a list of 30 latest successful bookings in the system
                 
                 "items": [
                     {
-                        "bookingid": "", 
-                        "roomname": "",
-                        "username": "",
-                        "time": "",
+                        "name": "Stage",
+                        "username": "Onur", 
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/booking/ROOMNAME"
+                                "href": "/tellus/api/bookings/Stage/"
                             },
                             "profile": {
                                 "href": "/profiles/booking_profile/"
@@ -1621,13 +1700,11 @@ Get a list of 30 latest successful bookings in the system
                         }
                     },
                     {
-                        "bookingid": "", 
-                        "roomname": "",
-                        "username": "",
-                        "time": "",
+                        "name": "Aspire",
+                        "username": "Lam",
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/booking/ROOMNAME"
+                                "href": "/tellus/api/booking/Aspire/"
                             },
                             "profile": {
                                 "href": "/profiles/booking_profile/"
@@ -1638,38 +1715,58 @@ Get a list of 30 latest successful bookings in the system
                 
                 "@controls": {
                     "self": {
-                        "href": "/tellus/api/booking/ROOMNAME"
+                        "href": "/tellus/api/bookings/history/"
                     },
-                    "forum:add-message": {
-                        "title": "Create message",
-                        "href": "/forum/api/messages/",
+                    "tellus:history-bookings": {
+                        "title": "Booking history",
+                        "href": "/tellus/api/bookings/",
                         "encoding": "json",
-                        "method": "POST",
+                        "method": "GET",
                         "schema": {
                             "type": "object",
                             "properties": {
-                                "headline": {
-                                    "title": "Headline",
-                                    "description": "Message headline",
+                                "username": {
+                                    "title": "User Name",
+                                    "description": "Username of the booking's owner",
                                     "type": "string"
                                 },
-                                "articleBody": {
-                                    "title": "Contents",
-                                    "description": "Message contents",
+                                "bookingTime": {
+                                    "title": "Booking Time",
+                                    "description": "Date and time of the booking",
                                     "type": "string"
                                 },
-                                "author": {
-                                    "title": "Author",
-                                    "description": "Nickname of the message author",
+                                "email": {
+                                    "title": "Email",
+                                    "description": "Email of the booking's owner",
+                                    "type": "string"
+                                },
+                                "familyName": {
+                                    "title": "Family Name",
+                                    "description": "Family Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "givenName": {
+                                    "title": "Given Name",
+                                    "description": "Given Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "telephone": {
+                                    "title": "Telephone",
+                                    "description": "Telephone number of the booking's owner",
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "title": "Room name",
+                                    "description": "Room name which the booking take place",
                                     "type": "string"
                                 },
                             },
-                            "required": ["headline", "articleBody"]
+                            "required": ["username", "bookingTime", "name"]
                         }
                     },
-                    "forum:users-all": {
-                        "title": "List users", 
-                        "href": "/forum/api/users/"
+                    "tellus:rooms-all" {
+                        "title": "List rooms",
+                        "href": "/tellus/api/rooms/"
                     }
                 }
             }
