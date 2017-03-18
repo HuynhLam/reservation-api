@@ -222,6 +222,7 @@ Return the User Profile in HTML format
 + Response 200 (text/html)
 
 
+
 # Group Rooms
 
 All these resources use the [Room Profile](reference/profiles/room_profile).
@@ -230,14 +231,14 @@ In addition all error messages follow the profile defined [Error Profile](refere
 
 
 
-
-## Rooms List [tellus/api/rooms]
+## Rooms List [/tellus/api/rooms]
 
 A list of all rooms in Tellus.
 
 ### Rooms List [GET]
 
 Get the list of all Rooms in the system.
+
 
 + Relation: self    
 + Request
@@ -261,12 +262,12 @@ Get the list of all Rooms in the system.
                 
                 "items": [
                     {
-                        "name": "", 
-                        "photo": "",
-                        "resources": "",
+                        "name": "Stage", 
+                        "photo": "stage.jpg",
+                        "resources": "Projector, Microphone, Speaker, Webcam, Tables, Chairs",
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/rooms/ROOMNAME"
+                                "href": "/tellus/api/rooms/Stage"
                             },
                             "profile": {
                                 "href": "/profiles/room_profile/"
@@ -274,12 +275,12 @@ Get the list of all Rooms in the system.
                         }
                     },
                     {
-                        "name": "", 
-                        "photo": "",
-                        "resources": "",
+                        "name": "Aspire", 
+                        "photo": "aspire.jpg",
+                        "resources": "TV, Webcam, Microphone, Tables, Chairs",
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/rooms/ROOMNAME"
+                                "href": "/tellus/api/rooms/Aspire"
                             },
                             "profile": {
                                 "href": "/profiles/room_profile/"
@@ -290,287 +291,51 @@ Get the list of all Rooms in the system.
                 
                 "@controls": {
                     "self": {
-                        "href": "/forum/api/rooms/"
+                        "href": "/tellus/api/rooms/"
                     },
-                    "forum:add-message": {
-                        "title": "Create message",
-                        "href": "/forum/api/messages/",
+                    "tellus:modify-room": {
+                        "title": "Modify Room",
+                        "href": "/tellus/api/rooms/",
                         "encoding": "json",
-                        "method": "POST",
+                        "method": "PUT",
                         "schema": {
                             "type": "object",
                             "properties": {
-                                "headline": {
-                                    "title": "Headline",
-                                    "description": "Message headline",
+                                "name": {
+                                    "title": "RoomName",
+                                    "description": "Name of the room",
                                     "type": "string"
                                 },
-                                "articleBody": {
-                                    "title": "Contents",
-                                    "description": "Message contents",
+                                "resources": {
+                                    "title": "Resources",
+                                    "description": "Resources avaible in room",
                                     "type": "string"
                                 },
-                                "author": {
-                                    "title": "Author",
-                                    "description": "Nickname of the message author",
+                                "photo": {
+                                    "title": "Photo",
+                                    "description": "Photo of the room",
                                     "type": "string"
                                 },
                             },
-                            "required": ["headline", "articleBody"]
+                            "required": ["name"]
                         }
-                    },
-                    "forum:users-all": {
-                        "title": "List users", 
-                        "href": "/forum/api/users/"
                     }
                 }
             }
     
 
-### Create a new message initiating a thread [POST]       
+## Room [/tellus/api/rooms/{name}]
 
-Create a new message, utilized as a parent thread. 
-
-If the attribute `author` is not included the system will consider it as `Anonymous` user. 
-
-+ Request (application/json)
-
-    + Headers
-    
-            Accept: application/vnd.mason+json
-        
-    + Body 
-    
-            {
-                "headline": "Do not use IE",
-                "articleBody": "Do not try to fix what others broke",
-                "author": "HockeyFan"
-            }
-
-+ Response 201
-
-    The message is created correctly. 
-        
-    + Headers
-                
-            Location: URL of the new created resource
-
-+ Response 400 (application/vnd.mason+json)
-
-    The message is not well formed. Some of the parameters is not correctly received. 
-    
-    + Body
-    
-            {
-                "@error": {
-                    "@message": "Wrong request format"
-                    "@messages": [
-                        "Be sure you include message title and body"
-                    ]
-                }
-                "resource_url": "/forum/api/messages/"
-            }
-
-
-+ Response 415 (application/vnd.mason+json)
-
-    The server cannot understand the format of the response.
-    
-    + Body 
-    
-            {
-                "@error": {
-                    "@message": "Unsupported media type"
-                    "@messages": [
-                        "Use a JSON compatible format"
-                    ]
-                }
-                "resource_url": "/forum/api/messages/"
-            }
-
-+ Response 500  (application/vnd.mason+json)
-
-    The server cannot store the message in the database.
-    
-    + Body 
-
-            {
-                "@error": {
-                    "@message": "Problem with the database"
-                    "@messages": [
-                        "Cannot access the database"
-                    ]
-                }
-                "resource_url": "/forum/api/messages/"
-            }
-        
-## Message [/forum/api/messages/{messageid}]
-
-A message stored in the Forum database. A message contains a title which describes the information of the message,
-the body (the message itself), information about the sender and a unique id that identifies this message in the database.
-Some messages might contain links to other messages (one message is the reply of another).
+A room stored in the Tellus database. A room contains a photo which is an URL to where the room picture and resources which are 
+list of resources available in the room such as projector etc.
 
 + Parameters 
-    + messageid: `msg-1` (string)   - The id of the new message. Using regex syntax this parameter follows format: msg-\d+
+    + name: `Stage` (string)   - The name of the room
 
-### Receive message information [GET]
 
-Receives the information of a particular message
+### Edit a room [PUT]       
 
-+ Relation: self
-+ Request
-    
-    + Headers
-    
-            Accept: application/vnd.mason+json
-    
-+ Response 200 (application/vnd.mason+json)
-
-    Message correctly retrieved
-
-    + Body 
-    
-            {
-                "@namespaces": {
-                    "forum": {
-                        "name": "/forum/link-relations/"
-                    },
-                    "atom-thread": {
-                        "name": "https://tools.ietf.org/html/rfc4685"
-                    }
-                },
-                
-                "articleBody": "I am using a float layout on my website but I've run into some problems with Internet Explorer. I have set the left margin of a float to 100 pixels, but IE uses a margin of 200px instead. Why is that? Is this one of the many bugs in IE?",
-                "author": "AxelW",
-                "headline": "CSS: Margin problems with IE",
-                "editor": null,
-                
-                "@controls": {
-                    "self": {
-                        "href": "/forum/api/messages/msg-1/"
-                    },
-                    "profile": {
-                        "href": "/profiles/message-profile/"
-                    },
-                    "author": {
-                        "href": "/forum/api/users/AxelW/"
-                    },
-                    "collection": {
-                        "href": "/forum/api/messages/"
-                    },
-                    "edit": {
-                        "title": "Edit this message",
-                        "href": "/forum/api/messages/msg-1/",
-                        "encoding": "json",
-                        "method": "GET",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "headline": {
-                                    "title": "Headline",
-                                    "description": "Message headline",
-                                    "type": "string"
-                                },
-                                "articleBody": {
-                                    "title": "Contents",
-                                    "description": "Message contents",
-                                    "type": "string"
-                                },
-                                "editor": {
-                                    "title": "Editor",
-                                    "description": "Nickname of the last person to edit the message",
-                                    "type": "string"
-                                }
-                            },
-                            "required": ["headline", "articleBody"]
-                        }
-                    },
-                    "forum:delete": {
-                        "href": "/forum/api/messages/msg-1/",
-                        "method": "DELETE"
-                    },
-                    "forum:reply": {
-                        "title": "Reply to this message",
-                        "href": "/forum/api/messages/msg-1/",
-                        "encoding": "json",
-                        "method": "POST",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "headline": {
-                                    "title": "Headline",
-                                    "description": "Message headline",
-                                    "type": "string"
-                                },
-                                "articleBody": {
-                                    "title": "Contents",
-                                    "description": "Message contents",
-                                    "type": "string"
-                                },
-                                "author": {
-                                    "title": "Author",
-                                    "description": "Nickname of the message author",
-                                    "type": "string"
-                                },
-                            },
-                            "required": ["headline", "articleBody"]
-                        }
-                    }
-                }
-            }
-    
-+ Response 404 (application/vnd.mason+json)
-
-    The message with id `messageid` does not exist in the database.
-        
-    + Body 
-    
-            {
-                "@error": {
-                    "@message": "Message does not exist"
-                    "@messages": [
-                        "There is no a message with id msg-1"
-                    ]
-                }
-                "resource_url": "/forum/api/messages/msg-1/"
-            }
-
-### Delete a message [DELETE]
-
-Delete a message from the system
-
-+ Request
-    
-    + Headers
-    
-            Accept: application/vnd.mason+json
-    
-+ Response 204
-
-    The message was successfully deleted
-        
-    + Body 
-        
-
-+ Response 404 (application/vnd.mason+json)
-
-    The message with id `messageid` does not exist in the database.
-        
-    + Body 
-    
-            {
-                "@error": {
-                    "@message": "Message does not exist"
-                    "@messages": [
-                        "There is no a message with id msg-1"
-                    ]
-                }
-                "resource_url": "/forum/api/messages/msg-1"
-            }
-
-### Edit a message [PUT]       
-
-Edit the information of a message. The field  `editor` should be included, otherwise the system answers with status code 404.
+Edit the information of a room.
 
 + Request (application/json)
 
@@ -581,21 +346,20 @@ Edit the information of a message. The field  `editor` should be included, other
     + Body 
     
             {
-                "headline": "Do not use IE",
-                "articleBody": "Do not try to fix what others borked",
-                "editor": "HockeyFan"
+                "resources": "Tables, Chairs",
+                "photo": "new_stage.jpg"
             }
 
 
 + Response 204
 
-    The message is modified correctly
+    The room is modified correctly
         
     + Body
 
 + Response 400 (application/vnd.mason+json)
 
-    The message is not well formed. Some of the parameters is not correctly received. 
+    The room format is not well formed. Some of the parameters is not correctly received. 
     
     + Body
     
@@ -603,26 +367,26 @@ Edit the information of a message. The field  `editor` should be included, other
                 "@error": {
                     "@message": "Wrong request format"
                     "@messages": [
-                        "Be sure you include message title and body"
+                        "Be sure you write parameter names correctly."
                     ]
                 }
-                "resource_url": "/forum/api/messages/msg-1/"
+                "resource_url": "/tellus/api/rooms/Stage"
             }
 
 + Response 404 (application/vnd.mason+json)
 
-    The message with id `messageid` does not exist in the database.
+    The room with name `name` does not exist in the database.
         
     + Body 
     
             {
                 "@error": {
-                    "@message": "Message does not exist"
+                    "@message": "Room does not exist"
                     "@messages": [
-                        "There is no a message with id msg-1/"
+                        "There is no a room with name Stage"
                     ]
                 }
-                "resource_url": "/forum/api/messages/msg-1"
+                "resource_url": "/tellus/api/rooms/Stage"
             }
 
 + Response 415 (application/vnd.mason+json)
@@ -638,15 +402,15 @@ Edit the information of a message. The field  `editor` should be included, other
                         "Use a JSON compatible format"
                     ]
                 }
-                "resource_url": "/forum/api/messages/msg-1/"
+                "resource_url": "/tellus/api/rooms/Stage"
             }
 
 + Response 500  (application/vnd.mason+json)
 
-    The server cannot store the message in the database.
+    The server cannot store the room in the database.
     
     + Body 
-
+    
             {
                 "@error": {
                     "@message": "Problem with the database"
@@ -654,231 +418,23 @@ Edit the information of a message. The field  `editor` should be included, other
                         "Cannot access the database"
                     ]
                 }
-                "resource_url": "/forum/api/messages/msg-1/"
+                "resource_url": "/tellus/api/rooms/Stage"
             }
 
-### Reply an existing message [POST]       
-
-Create a new message replying the message with id `messageid`. 
-If the attribute `author` is not included the system will consider it as `Anonymous` user. 
-
-+ Relation: reply
-+ Request (application/json)
-
-    + Headers
-    
-            Accept: application/vnd.mason+json
-        
-    + Body 
-    
-            {
-                "headline": "Do not use IE",
-                "articleBody": "Do not try to fix what others borked",
-                "editor": "HockeyFan"
-            }
-
-+ Response 201
-
-    The message is created correctly. 
-        
-    + Headers
-                
-            Location: URL of the new created resource
-
-+ Response 400 (application/vnd.mason+json)
-
-    The message is not well formed. Some of the parameters is not correctly received. 
-    
-    + Body
-    
-            {
-                "@error": {
-                    "@message": "Wrong request format"
-                    "@messages": [
-                        "Be sure you include message title and body"
-                    ]
-                }
-                "resource_url": "/forum/api/messages/msg-1/"
-            }
-
-+ Response 404 (application/vnd.mason+json)
-
-    The message with id `messageid` does not exist in the database.
-        
-    + Body 
-    
-            {
-                "@error": {
-                    "@message": "Message does not exist"
-                    "@messages": [
-                        "There is no a message with id msg-1"
-                    ]
-                }
-                "resource_url": "/forum/api/messages/msg-1/"
-            }
-
-+ Response 415 (application/vnd.mason+json)
-
-    The server cannot understand the format of the response.
-    
-    + Body 
-    
-            {
-                "@error": {
-                    "@message": "Unsupported media type"
-                    "@messages": [
-                        "Use a JSON compatible format"
-                    ]
-                }
-                "resource_url": "/forum/api/messages/msg-1/"
-            }
-
-+ Response 500  (application/vnd.mason+json)
-
-    The server cannot store the message in the database.
-    
-    + Body 
-
-            {
-                "@error": {
-                    "@message": "Problem with the database"
-                    "@messages": [
-                        "Cannot access the database"
-                    ]
-                }
-                "resource_url": "/forum/api/messages/msg-1/"
-            }
 
 #Group Users
+
 All these resources use [User Profile](reference/profiles/user_profile).
 
 In addition all error messages follow the profile defined [Error Profile](reference/profiles/error_profile)
 
-## Users List [/api/users]
-
-A list of all the users registered in the Forum.
-
-### List users [GET]
-
-Get a list of all users in the system
-    
-+ Request
-    
-    + Headers
-    
-            Accept: application/vnd.mason+json
-    
-+ Response 200 (application/vnd.mason+json)
-    
-    + Body 
-    
-            {
-
-                "@namespaces": {
-                    "forum": {
-                        "name": "/forum/link-relations/"
-                    }
-                },
-                
-
-                "items": [
-                    {
-                        "nickname": "Mystery",
-                        "registrationdate": 1362015937,
-                        "@controls": {
-                            "self": {
-                                "href": "/forum/api/users/Mystery/",                                
-                            },
-                            "profile": {
-                                "self": "/profiles/user-profile/"
-                            },
-                            "forum:messages-history": {
-                                "title": "Message history",                    
-                                "href": "/forum/api/users/Mystery/history{?length,before,after}",
-                                "isHrefTemplate": true, 
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "after": {
-                                            "description": "Find messages after (timestamp as seconds)", 
-                                            "type": "integer"
-                                        }, 
-                                        "before": {
-                                            "description": "Find messages before (timestamp as seconds)", 
-                                            "type": "integer"
-                                        }, 
-                                        "length": {
-                                            "description": "Maximum number of messages returned", 
-                                            "type": "integer"
-                                        }
-                                    },                   
-                                    "required": []
-                                }
-                            }
-                        }
-                    },
-                    {
-                        "nickname": "AxelW",
-                        "registrationdate": 1357724086,
-                        "@controls": {
-                            "self": {
-                                "href": "/forum/api/users/AxelW/",
-                            },
-                            "profile": {
-                                "self": "/profiles/user-profile/"
-                            },
-                            "forum:messages-history": {
-                                "title": "Message history",                    
-                                "href": "/forum/api/users/AxelW/history{?length,before,after}",
-                                "isHrefTemplate": true,
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "after": {
-                                            "description": "Find messages after (timestamp as seconds)", 
-                                            "type": "integer"
-                                        }, 
-                                        "before": {
-                                            "description": "Find messages before (timestamp as seconds)", 
-                                            "type": "integer"
-                                        }, 
-                                        "length": {
-                                            "description": "Maximum number of messages returned", 
-                                            "type": "integer"
-                                        }
-                                    },                   
-                                    "required": []
-                                }
-                            }
-                        }
-                    }
-                ],
-                
-                "@controls": {
-                    "self": {
-                        "href": "/forum/api/users/"
-                    },
-                    "forum:add-user": {
-                        "title": "Create user",
-                        "href": "/forum/api/users/",
-                        "encoding": "json",
-                        "method": "POST",
-                        "schemaUrl": "/forum/schema/user/"
-                    },
-                    "forum:messages-all": {
-                        "href": "/forum/api/messages/",
-                        "title": "All messages"
-                    }
-                }
-            }
+## Users [/tellus/api/users/]
 
 ### Register a user [POST]       
 
-Create a new user. Note that in the example the properties telephone, skype and image are not included in the request example.
+Create a new user.
 
 + Request (application/json)
-
-    Note that in the example the properties `telephone`, `skype` and `image` are not included in the request example.
 
     + Headers
     
@@ -887,19 +443,12 @@ Create a new user. Note that in the example the properties telephone, skype and 
     + Body 
     
             {
-                "nickname": "SuperDonkey",
-                "address": {
-                    "addressLocality": "Palencia",
-                    "addressCountry": "Spain"
-                },
-                "avatar": "file2.jpg",
-                "birthDate": "1990-10-12",
-                "email": "john@notanyone.com",
-                "familyName": "DonNadie",
-                "gender": "male",
-                "givenName": "John",
-                "signature": "What is born in Palencia stays in Palencia",
-                "website": "http://nothingisnothin.com"
+                "username": "nightwisher",
+                "isAdmin": "False",
+                "email": "floor.jansen@nightwish.com",
+                "familyName": "Jansen",
+                "givenName": "Floor",
+                "telephone": "0446666666"
             }
 
 + Response 201
@@ -912,7 +461,7 @@ Create a new user. Note that in the example the properties telephone, skype and 
 
 + Response 400 (application/vnd.mason+json)
 
-    The message is not well formed. Some of the parameters is not correctly received. 
+    The User format is not well formed. Some of the parameters is not correctly received. 
     
     + Body
     
@@ -923,23 +472,23 @@ Create a new user. Note that in the example the properties telephone, skype and 
                         "Be sure you include all mandatory properties"
                     ]
                 }
-                "resource_url: "/forum/api/users/"
+                "resource_url: "/tellus/api/users/"
             }
 
 + Response 409 (application/vnd.mason+json)
 
-    Exists a user when the same nickname
+    Exists a user with the same username
     
     + Body
     
             {
                 "@error": {
-                    "@message": "Reserved nickname",
+                    "@message": "Reserved username",
                     "@messages": [
-                        "There is already a user with same nickname: AxelW"
+                        "There is already a user with same username: nightwisher"
                     ]
                 }
-                "resource_url: "/forum/api/users/"
+                "resource_url: "/tellus/api/users/"
             }
 
 + Response 415 (application/vnd.mason+json)
@@ -952,10 +501,10 @@ Create a new user. Note that in the example the properties telephone, skype and 
                 "@error": {
                     "@message": "Unsupported media type",
                     "@messages": [
-                        "Use a JSOn compatible format"
+                        "Use a JSON compatible format"
                     ]
                 }
-                "resource_url": "/forum/api/users/",
+                "resource_url": "/tellus/api/users/",
             }
 
 
@@ -972,77 +521,19 @@ Create a new user. Note that in the example the properties telephone, skype and 
                         "Cannot access the database"
                     ]
                 }
-                "resource_url": "/forum/api/users/",
+                "resource_url": "/tellus/api/users/",
             }
 
-## User [/api/users/{nickname}]
 
-A user is a member of the Forum. A user can send messages to the Forum. Each user has a unique nickname that serves as a unique identifier in the system. 
-One user cannot register using an existing nickname. Anyone can register in the Forum to become a user. 
+## User [/api/users/{username}]
 
-The user profile information is splitted in two different resources [User's public profile](reference/users/users-public-profile) and [User's private profile](references/users/users-private-profile) 
-
-Note that a user is read-only in the [Users](reference/users/users-list) collection. Hence, it cannot be modified nor deleted unless the corresponding link relation is included in the body of the user.
+A user is a student or stuff at University of Oulu. A user can reserve a room. A user with admin privileges can modify room. 
+Each user has a unique username that serves as a unique identifier in the system. 
+One user cannot register using an existing username.
 
 + Parameters 
-    + nickname: `AxelW` (string)   - The nickname of the user to search for.
+    + username: `paradise` (string)   - The username of the user to search for.
 
-### Receive user information [GET]
-
-Receives the information of a particular user
-
-+ Relation: self
-+ Request
-    
-    + Headers
-    
-            Accept: application/vnd.mason+json
-    
-+ Response 200 (application/vnd.mason+json)
-
-    The nickname exists.
-
-    + Body
-
-            {
-                "@namespaces": {
-                    "forum": {
-                        "name": "/forum/link-relations/"
-                    }
-                },
-                "@controls": {
-                    "self": {
-                        "href": "/forum/api/users/<nickname>/"
-                    },
-                    "forum:add-user": {
-                        "title": "Create user",
-                        "href": "/forum/api/users/",
-                        "encoding": "json",
-                        "method": "POST",
-                        "schemaUrl": "/forum/schema/user/"
-                    },
-                    "forum:messages-all": {
-                        "href": "/forum/api/messages/",
-                        "title": "All messages"
-                    }
-                }
-            }
-    
-+ Response 404 (application/vnd.mason+json)
-
-    The nickname is not stored in the system.
-        
-    + Body 
-    
-            {
-                "@error": {
-                    "@message": "User does not exist"
-                    "@messages": [
-                        "There is no a user with nickname AxelW"
-                    ]
-                }
-                "resource_url": "/forum/api/users/AxelW/"
-            }
 
 ### Delete a user [DELETE]
 
@@ -1063,7 +554,7 @@ Delete a user from the system
 
 + Response 404 (application/vnd.mason+json)
 
-    The user with nickname `nickname` does not exist in the database.
+    The user with nickname `username` does not exist in the database.
         
     + Body 
     
@@ -1071,168 +562,11 @@ Delete a user from the system
                 "@error": {
                     "@message": "User does not exist"
                     "@messages": [
-                        "There is no a user with nickname AxelW"
+                        "There is no a user with username paradise"
                     ]
                 }
-                "resource_url": "/forum/api/users/AxelW/"
+                "resource_url": "/tellus/api/users/paradise/"
             }
-
-
-## User's public profile [/api/users/{nickname}/public_profile]
-
-Users information visible to everybody. Only authorized users can modify this information.
-
-+ Parameters 
-    + nickname: `AxelW` (string)   - The nickname of the user
-
-### Get user's public profile [GET]
-
-+ Response 501
-    
-        TO BE DEFINED
-
-### Modify user's public profile [PUT]
-
-+ Request 
-
-        TO BE DEFINED
-
-+ Response 501
-
-        TO BE DEFINED
-
-## User's private profile  [/api/users/{nickname}/restricted_profile/]
-
-Users information only visible to forum administration staff. Only user itself and administrators can modify this information.
-
-+ Parameters 
-    + nickname: `AxelW` (string)   - The nickname of the user
-
-### Get user's restricted profile [GET]
-
-+ Response 501
-    
-        TO BE DEFINED
-
-### Modify user's restricted profile [PUT]
-
-+ Request 
-
-        TO BE DEFINED
-
-+ Response 501
-
-        TO BE DEFINED
-
-## User's history [/api/users/{nickname}/history{?length,before,after}]
-
-List of messages sent by a user. It is the result of an algorithm which searches the messages sent by a specific user.
-The algorithm might receive 3 arguments to filter the results: the amount of messages to return, a date to remove all messages before it  and a date to remove all messages after it. 
-
-+ Parameters 
-    + nickname: `AxelW` (string)   - The nickname of the user to search for.
-    + length: `1` (integer) the number of messages to return.
-    + after: `1362317481` (timestamp) the messages returned must have been modified after the time provided in this parameter. Time is UNIX timestamp
-    + before: `1362317481` (timestamp) the messages returned must have been modified before the time provided in this parameter. Time is UNIX timestamp
-
-### Receive history information [GET]
-
-
-+ Relation: self
-+ Request
-    
-    + Headers
-    
-            Accept: application/vnd.mason+json
-    
-+ Response 200 (application/vnd.mason+json)
-
-    the list can be generated and it is not empty.
-
-    + Body 
-
-            {
-                "@namespaces": {
-                    "forum": {
-                        "name": "/forum/link-relations/"
-                    }
-                },
-
-                "items": [
-                    {
-                        "id": "msg-21",
-                        "headline": "Do not use IE",            
-                        "@controls": {
-                            "self": {
-                                "href": "/forum/api/messages/msg-21/"
-                            },
-                            "profile": {
-                                "href": "/profiles/message-profile/"
-                            }                            
-                        }
-                    },
-                    {
-                        "id": "msg-17",
-                        "headline": "Try hello",            
-                        "@controls": {
-                            "self": {
-                                "href": "/forum/api/messages/msg-17/"
-                            },
-                            "profile": {
-                                "href": "/profiles/message-profile/"
-                            }                            
-                        }
-                    }
-                ],
-                
-                "@controls": {
-                    "self": {
-                        "href": "/forum/api/users/<nickname>/history/"
-                    },
-                    "forum:messages-history": {
-                        "title": "Message history",
-                        "href": "/forum/api/messages/",
-                        "encoding": "json",
-                        "method": "GET",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "length": {
-                                    "description": "Maximum number of messages returned",
-                                    "type": "integer"
-                                },
-                                "before": {
-                                    "description": "Find messages before (timestamp as seconds)",
-                                    "type": "integer"
-                                },
-                                "after": {
-                                    "description": "Find messages after (timestamp as seconds)",
-                                    "type": "integer"
-                                },
-                            },
-                            "required": []
-                        }
-                    }
-                }
-            }
-    
-+ Response 404 (application/vnd.mason+json)
-
-    No message meets the requirement.
-        
-    + Body 
-    
-            {
-                "@error": {
-                    "@message": "Messages not found."
-                    "@messages": [
-                        "There are no messages for nickname AxelW"
-                    ]
-                }
-                "resource_url": "/forum/api/users/AxelW/history/"
-            }
-            
-            **TO BE DEFINED BY STUDENTS**
 
 
 # Group Booking
@@ -1242,14 +576,176 @@ All these resources use the [Booking Profile](reference/profiles/booking_profile
 In addition all error messages follow the profile defined [Error Profile](reference/profiles/error_profile)
 
 
-## Bookings List [/tellus/api/bookings/{roomname}/]
+## Bookings List [/tellus/api/bookings/]
 
-A list of all Bookings in a specific room. 
+A list of all Bookings in the database.
 
 
 ### List Bookings [GET]
 
-Get a list of all bookings by roomname in the system
+Get a list of all bookings in the system.
+
++ Relation: self    
++ Request
+    
+    + Headers
+    
+            Accept: application/vnd.mason+json
+    
++ Response 200 (application/vnd.mason+json)
+
+    List Bookings was successfully retrieved. For the sake of simplicity we do not include user's details.
+
+    + Body 
+    
+            {
+                "@namespaces": {
+                    "tellus": {
+                        "name": "/tellus/link-relations/"
+                    }
+                },
+                
+                "items": [
+                    {
+                        "name": "Stage",
+                        "username": "kirbac",
+                        "bookingTime": "2017-03-01 10:00",
+                        "@controls": {
+                            "self": {
+                                "href": "/tellus/api/booking/Stage"
+                            },
+                            "profile": {
+                                "href": "/profiles/booking_profile/"
+                            }                            
+                        }
+                    },
+                    {
+                        "name": "Chill",
+                        "username": "paradise",
+                        "bookingTime": "2017-03-05 12:00",
+                        "@controls": {
+                            "self": {
+                                "href": "/tellus/api/booking/Chill"
+                            },
+                            "profile": {
+                                "href": "/profiles/booking_profile/"
+                            }                            
+                        }
+                    }
+                ],
+                
+                "@controls": {
+                    "self": {
+                        "href": "/tellus/api/booking/ROOMNAME"
+                    },
+                    "tellus:add-booking": {
+                        "title": "Create booking",
+                        "href": "/tellus/api/bookings/",
+                        "encoding": "json",
+                        "method": "POST",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "username": {
+                                    "title": "User Name",
+                                    "description": "Username of the booking's owner",
+                                    "type": "string"
+                                },
+                                "bookingTime": {
+                                    "title": "Booking Time",
+                                    "description": "Date and time of the booking",
+                                    "type": "string"
+                                },
+                                "email": {
+                                    "title": "Email",
+                                    "description": "Email of the booking's owner",
+                                    "type": "string"
+                                },
+                                "familyName": {
+                                    "title": "Family Name",
+                                    "description": "Family Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "givenName": {
+                                    "title": "Given Name",
+                                    "description": "Given Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "telephone": {
+                                    "title": "Telephone",
+                                    "description": "Telephone number of the booking's owner",
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "title": "Room name",
+                                    "description": "Room name which the booking take place",
+                                    "type": "string"
+                                },
+                            },
+                            "required": ["username", "bookingTime", "name"]
+                        }
+                    },
+                    "tellus:modify-booking": {
+                        "title": "Modify Booking",
+                        "href": "/tellus/api/bookings/",
+                        "encoding": "json",
+                        "method": "PUT",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "username": {
+                                    "title": "User Name",
+                                    "description": "Username of the booking's owner",
+                                    "type": "string"
+                                },
+                                "bookingTime": {
+                                    "title": "Booking Time",
+                                    "description": "Date and time of the booking",
+                                    "type": "string"
+                                },
+                                "email": {
+                                    "title": "Email",
+                                    "description": "Email of the booking's owner",
+                                    "type": "string"
+                                },
+                                "familyName": {
+                                    "title": "Family Name",
+                                    "description": "Family Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "givenName": {
+                                    "title": "Given Name",
+                                    "description": "Given Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "telephone": {
+                                    "title": "Telephone",
+                                    "description": "Telephone number of the booking's owner",
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "title": "Room name",
+                                    "description": "Room name which the booking take place",
+                                    "type": "string"
+                                },
+                            },
+                            "required": ["username", "bookingTime", "name"]
+                        }
+                    }
+                }
+            } 
+
+
+
+## Booking [/tellus/api/bookings/{name}/]
+
+A booking stored in the Bookings database. A booking contains room name which the booking will place, information of user
+who currently make the booking (include username, firstname, lastname, email and contact number), the time the booking will
+happen and a unique id that identifies this booking in the database.
+
+### Booking [GET]
+
+Get a list of all bookings by room name in the system
 
 + Relation: self    
 + Request
@@ -1273,13 +769,11 @@ Get a list of all bookings by roomname in the system
                 
                 "items": [
                     {
-                        "bookingid": "", 
-                        "roomname": "",
-                        "username": "",
-                        "time": "",
+                        "name": "Stage",
+                        "username": "Onur", 
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/booking/ROOMNAME"
+                                "href": "/tellus/api/bookings/Stage/"
                             },
                             "profile": {
                                 "href": "/profiles/booking_profile/"
@@ -1287,13 +781,11 @@ Get a list of all bookings by roomname in the system
                         }
                     },
                     {
-                        "bookingid": "", 
-                        "roomname": "",
-                        "username": "",
-                        "time": "",
+                        "name": "Aspire",
+                        "username": "Lam",
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/booking/ROOMNAME"
+                                "href": "/tellus/api/booking/Aspire/"
                             },
                             "profile": {
                                 "href": "/profiles/booking_profile/"
@@ -1304,69 +796,118 @@ Get a list of all bookings by roomname in the system
                 
                 "@controls": {
                     "self": {
-                        "href": "/tellus/api/booking/ROOMNAME"
+                        "href": "/tellus/api/bookings/{name}/"
                     },
-                    "forum:add-message": {
-                        "title": "Create message",
-                        "href": "/forum/api/messages/",
+                    "tellus:add-booking": {
+                        "title": "Create booking",
+                        "href": "/tellus/api/bookings/",
                         "encoding": "json",
                         "method": "POST",
                         "schema": {
                             "type": "object",
                             "properties": {
-                                "headline": {
-                                    "title": "Headline",
-                                    "description": "Message headline",
+                                "username": {
+                                    "title": "User Name",
+                                    "description": "Username of the booking's owner",
                                     "type": "string"
                                 },
-                                "articleBody": {
-                                    "title": "Contents",
-                                    "description": "Message contents",
+                                "bookingTime": {
+                                    "title": "Booking Time",
+                                    "description": "Date and time of the booking",
                                     "type": "string"
                                 },
-                                "author": {
-                                    "title": "Author",
-                                    "description": "Nickname of the message author",
+                                "email": {
+                                    "title": "Email",
+                                    "description": "Email of the booking's owner",
+                                    "type": "string"
+                                },
+                                "familyName": {
+                                    "title": "Family Name",
+                                    "description": "Family Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "givenName": {
+                                    "title": "Given Name",
+                                    "description": "Given Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "telephone": {
+                                    "title": "Telephone",
+                                    "description": "Telephone number of the booking's owner",
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "title": "Room name",
+                                    "description": "Room name which the booking take place",
                                     "type": "string"
                                 },
                             },
-                            "required": ["headline", "articleBody"]
+                            "required": ["username", "bookingTime", "name"]
                         }
                     },
-                    "forum:users-all": {
-                        "title": "List users", 
-                        "href": "/forum/api/users/"
+                    "tellus:modify-booking": {
+                        "title": "Modify Booking",
+                        "href": "/tellus/api/bookings/",
+                        "encoding": "json",
+                        "method": "PUT",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "username": {
+                                    "title": "User Name",
+                                    "description": "Username of the booking's owner",
+                                    "type": "string"
+                                },
+                                "bookingTime": {
+                                    "title": "Booking Time",
+                                    "description": "Date and time of the booking",
+                                    "type": "string"
+                                },
+                                "email": {
+                                    "title": "Email",
+                                    "description": "Email of the booking's owner",
+                                    "type": "string"
+                                },
+                                "familyName": {
+                                    "title": "Family Name",
+                                    "description": "Family Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "givenName": {
+                                    "title": "Given Name",
+                                    "description": "Given Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "telephone": {
+                                    "title": "Telephone",
+                                    "description": "Telephone number of the booking's owner",
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "title": "Room name",
+                                    "description": "Room name which the booking take place",
+                                    "type": "string"
+                                },
+                            },
+                            "required": ["username", "bookingTime", "name"]
+                        }
+                    },
+                    "tellus:delete": {
+                        "title": "Delete booking",
+                        "href": "/tellus/api/bookings/{booking_id}/",
+                        "method": "DELETE"
+                    },
+                    "tellus:rooms-all": {
+                        "title": "List rooms",
+                        "href": "/tellus/api/rooms/"
                     }
                 }
             }
-     
-+ Response 404 (application/vnd.mason+json)
-
-    List Bookings is empty. No Booking by this roomname. 
-    
-    + Body
-    
-            {
-                "@error": {
-                    "@message": "Empty list"
-                    "@messages": [
-                        "There is no booking for this room yet."
-                    ]
-                }
-                "resource_url": "/tellus/api/bookings/Chill/"
-            }
-
-
-## Booking [/tellus/api/bookings/]
-
-A booking stored in the Bookings database. A booking contains roomname which the booking will place, information of user
-who currently make the booking (include username, firstname, lastname, email and contact number), the time the booking will
-happen and a unique id that identifies this booking in the database.
 
 
 ### Modify an existence booking [PUT]       
 
-Modify an existence booking by roomname, the time information will be change.  
+Modify an existence booking by room name, the time information will be change.  
 
 + Request (application/json)
 
@@ -1377,8 +918,13 @@ Modify an existence booking by roomname, the time information will be change.
     + Body 
     
             {
-                "time": ""
-
+                "username": "YoungUno",
+                "bookingTime": "2002-05-30T09:00:00+02:00",
+                "email": "uyoung@cool.com",
+                "familyName": "Young",
+                "givenName": "Uno",
+                "telephone": "4165971265"
+                "name": "Aspire",
             }
 
 + Response 204
@@ -1389,7 +935,7 @@ Modify an existence booking by roomname, the time information will be change.
 
 + Response 400 (application/vnd.mason+json)
 
-    The booking is not well formed. Some of the parameters is not correctly received. 
+    The booking format is not well formed. Some of the parameters is not correctly received. 
     
     + Body
     
@@ -1400,23 +946,23 @@ Modify an existence booking by roomname, the time information will be change.
                         "Be sure you include all mandatory properties"
                     ]
                 }
-                "resource_url: "/tellus/api/bookings/{roomname}/"
+                "resource_url": "/tellus/api/bookings/{name}/"
             }
 
 + Response 404 (application/vnd.mason+json)
 
-    The booking with id `messageid` does not exist in the database.
+    The booking does not exist in the database.
         
     + Body 
     
             {
                 "@error": {
-                    "@message": "Message does not exist"
+                    "@message": "Booking does not exist"
                     "@messages": [
                         "The wanted-changing booking is non-exist."
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/{roomname}/"
+                "resource_url": "/tellus/api/bookings/{name}/"
             }
 
 + Response 415 (application/vnd.mason+json)
@@ -1432,7 +978,7 @@ Modify an existence booking by roomname, the time information will be change.
                         "Use a JSON compatible format"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/{roomname}/"
+                "resource_url": "/tellus/api/bookings/{name}/"
             }
 
 + Response 500  (application/vnd.mason+json)
@@ -1448,7 +994,7 @@ Modify an existence booking by roomname, the time information will be change.
                         "Cannot access the database"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/{roomname}/"
+                "resource_url": "/tellus/api/bookings/{name}/"
             }
 
 
@@ -1465,13 +1011,13 @@ Create a new booking.
     + Body 
     
             {
-                "roomname": "Aspire",
                 "username": "YoungUno",
-                "time": "",
-                "firstname": "Young",
-                "lastname": "Uno",
-                "email": "uyoung@hothot.com",
-                "contactnumber": "4165971265"
+                "bookingTime": "2002-05-30T09:00:00+02:00",
+                "email": "uyoung@cool.com",
+                "familyName": "Young",
+                "givenName": "Uno",
+                "telephone": "4165971265"
+                "name": "Aspire",
             }
 
 + Response 201
@@ -1511,7 +1057,7 @@ Create a new booking.
                         "The new booking was conflicted with an existence booking."
                     ]
                 }
-                "resource_url: "/forum/api/users/"
+                "resource_url: "/forum/api/bookings/"
             }
 
 + Response 415 (application/vnd.mason+json)
@@ -1581,17 +1127,26 @@ Delete a booking from the system
             }
 
 
-### History Bookings [GET]
-
+## History Bookings [/tellus/api/bookings/history{?limit}]
 Get a list of 30 latest successful bookings in the system
 
-+ Relation: self    
+The limit parameter uses to create constrain of the number of successful booking returned.
+Default value of 'limit' is 30 bookings.
+
++ Parameters
+
+    + limit (number, optional) - The maximum number of bookings to return.
+        + Default: `30`
+
+### History [GET]
+
++ Relation: self
 + Request
     
     + Headers
     
             Accept: application/vnd.mason+json
-    
+
 + Response 200 (application/vnd.mason+json)
 
     List Bookings was successfully retrieved.
@@ -1607,13 +1162,11 @@ Get a list of 30 latest successful bookings in the system
                 
                 "items": [
                     {
-                        "bookingid": "", 
-                        "roomname": "",
-                        "username": "",
-                        "time": "",
+                        "name": "Stage",
+                        "username": "Onur", 
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/booking/ROOMNAME"
+                                "href": "/tellus/api/bookings/Stage/"
                             },
                             "profile": {
                                 "href": "/profiles/booking_profile/"
@@ -1621,13 +1174,11 @@ Get a list of 30 latest successful bookings in the system
                         }
                     },
                     {
-                        "bookingid": "", 
-                        "roomname": "",
-                        "username": "",
-                        "time": "",
+                        "name": "Aspire",
+                        "username": "Lam",
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/booking/ROOMNAME"
+                                "href": "/tellus/api/booking/Aspire/"
                             },
                             "profile": {
                                 "href": "/profiles/booking_profile/"
@@ -1638,54 +1189,59 @@ Get a list of 30 latest successful bookings in the system
                 
                 "@controls": {
                     "self": {
-                        "href": "/tellus/api/booking/ROOMNAME"
+                        "href": "/tellus/api/bookings/history/"
                     },
-                    "forum:add-message": {
-                        "title": "Create message",
-                        "href": "/forum/api/messages/",
+                    "tellus:history-bookings": {
+                        "title": "Booking history",
+                        "href": "/tellus/api/bookings/",
                         "encoding": "json",
-                        "method": "POST",
+                        "method": "GET",
                         "schema": {
                             "type": "object",
                             "properties": {
-                                "headline": {
-                                    "title": "Headline",
-                                    "description": "Message headline",
+                                "username": {
+                                    "title": "User Name",
+                                    "description": "Username of the booking's owner",
                                     "type": "string"
                                 },
-                                "articleBody": {
-                                    "title": "Contents",
-                                    "description": "Message contents",
+                                "bookingTime": {
+                                    "title": "Booking Time",
+                                    "description": "Date and time of the booking",
                                     "type": "string"
                                 },
-                                "author": {
-                                    "title": "Author",
-                                    "description": "Nickname of the message author",
+                                "email": {
+                                    "title": "Email",
+                                    "description": "Email of the booking's owner",
+                                    "type": "string"
+                                },
+                                "familyName": {
+                                    "title": "Family Name",
+                                    "description": "Family Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "givenName": {
+                                    "title": "Given Name",
+                                    "description": "Given Name of the booking's owner",
+                                    "type": "string"
+                                },
+                                "telephone": {
+                                    "title": "Telephone",
+                                    "description": "Telephone number of the booking's owner",
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "title": "Room name",
+                                    "description": "Room name which the booking take place",
                                     "type": "string"
                                 },
                             },
-                            "required": ["headline", "articleBody"]
+                            "required": ["username", "bookingTime", "name"]
                         }
                     },
-                    "forum:users-all": {
-                        "title": "List users", 
-                        "href": "/forum/api/users/"
+                    "tellus:rooms-all": {
+                        "title": "List rooms",
+                        "href": "/tellus/api/rooms/"
                     }
                 }
             }
      
-+ Response 404 (application/vnd.mason+json)
-
-    History Bookings is empty. Not any successful bookings in database. 
-    
-    + Body
-    
-            {
-                "@error": {
-                    "@message": "Empty list"
-                    "@messages": [
-                        "There is no booking for this room yet."
-                    ]
-                }
-                "resource_url": "/tellus/api/bookings/history/"
-            }
