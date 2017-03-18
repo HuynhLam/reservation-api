@@ -2,6 +2,8 @@
 
 This is an API to reserve rooms at Tellus.
 
+## [Tellus Room Reservation API Documentation](http://docs.tellusapi.apiary.io/#)
+
 ## Reservation API
 
 *Reservation part will be implemented soon.*
