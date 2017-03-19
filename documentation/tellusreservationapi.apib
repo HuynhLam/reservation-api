@@ -636,7 +636,7 @@ Get a list of all bookings in the system.
                 
                 "@controls": {
                     "self": {
-                        "href": "/tellus/api/booking/ROOMNAME"
+                        "href": "/tellus/api/booking/ROOMNAME/"
                     },
                     "tellus:add-booking": {
                         "title": "Create booking",
@@ -796,7 +796,7 @@ Get a list of all bookings by room name in the system
                 
                 "@controls": {
                     "self": {
-                        "href": "/tellus/api/bookings/{name}/"
+                        "href": "/tellus/api/bookings/ROOMNAME/"
                     },
                     "tellus:add-booking": {
                         "title": "Create booking",
@@ -919,12 +919,12 @@ Modify an existence booking by room name, the time information will be change.
     
             {
                 "username": "YoungUno",
-                "bookingTime": "2002-05-30T09:00:00+02:00",
+                "bookingTime": "2017-06-25T09:00:00+02:00",
                 "email": "uyoung@cool.com",
                 "familyName": "Young",
                 "givenName": "Uno",
-                "telephone": "4165971265"
-                "name": "Aspire",
+                "telephone": "04165971265",
+                "name": "Aspire"
             }
 
 + Response 204
@@ -946,7 +946,7 @@ Modify an existence booking by room name, the time information will be change.
                         "Be sure you include all mandatory properties"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/{name}/"
+                "resource_url": "/tellus/api/bookings/Aspire/"
             }
 
 + Response 404 (application/vnd.mason+json)
@@ -962,7 +962,7 @@ Modify an existence booking by room name, the time information will be change.
                         "The wanted-changing booking is non-exist."
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/{name}/"
+                "resource_url": "/tellus/api/bookings/Aspire/"
             }
 
 + Response 415 (application/vnd.mason+json)
@@ -978,7 +978,7 @@ Modify an existence booking by room name, the time information will be change.
                         "Use a JSON compatible format"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/{name}/"
+                "resource_url": "/tellus/api/bookings/Aspire/"
             }
 
 + Response 500  (application/vnd.mason+json)
@@ -994,7 +994,7 @@ Modify an existence booking by room name, the time information will be change.
                         "Cannot access the database"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/{name}/"
+                "resource_url": "/tellus/api/bookings/Aspire/"
             }
 
 
@@ -1010,14 +1010,15 @@ Create a new booking.
         
     + Body 
     
+            
             {
                 "username": "YoungUno",
-                "bookingTime": "2002-05-30T09:00:00+02:00",
+                "bookingTime": "2017-06-25T09:00:00+02:00",
                 "email": "uyoung@cool.com",
                 "familyName": "Young",
                 "givenName": "Uno",
-                "telephone": "4165971265"
-                "name": "Aspire",
+                "telephone": "04165971265",
+                "name": "Aspire"
             }
 
 + Response 201
