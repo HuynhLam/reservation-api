@@ -109,7 +109,7 @@ Profile definition for all rooms related resources.
 ### Dependencies
 
 This profile inherits:
- * Some semantic descriptors from [schema.org/Article](http://schema.org/MeetingRoom)
+ * Some semantic descriptors from [schema.org/MeetingRoom](http://schema.org/MeetingRoom)
 
 ### Link relations
 
@@ -121,7 +121,7 @@ This profile inherits:
 
  * `resources` (string): List of resources available in the room such as projector etc.
 
-Inherited from [schema.org/Article](http://schema.org/MeetingRoom)
+Inherited from [schema.org/MeetingRoom](http://schema.org/MeetingRoom)
  * `name`(string): See [https://schema.org/name](https://schema.org/name)
  * `photo` (string): See[https://schema.org/photo](https://schema.org/photo)
 
@@ -187,7 +187,7 @@ Profile definition for all booking resources.
 This profile inherits:
  * Some semantic descriptors from [https://schema.org/Reservation](https://schema.org/Reservation)
  * Some semantic descriptors from [https://schema.org/Person](https://schema.org/Person)
- * Some semantic descriptors from [schema.org/Article](http://schema.org/MeetingRoom)
+ * Some semantic descriptors from [schema.org/MeetingRoom](http://schema.org/MeetingRoom)
 
 ### Link relations
 
@@ -211,7 +211,7 @@ Inherited from [schema.org/Person](http://schema.org/Person)
  * `givenName` (string):See [http://schema.org/givenName](http://schema.org/givenName)
  * `telephone` (string):See [http://schema.org/telephone](http://schema.org/telephone)
 
-Inherited from [schema.org/Article](http://schema.org/MeetingRoom)
+Inherited from [schema.org/MeetingRoom](http://schema.org/MeetingRoom)
  * `name`(string): See [https://schema.org/name](https://schema.org/name)
 
 
@@ -636,7 +636,7 @@ Get a list of all bookings in the system.
                 
                 "@controls": {
                     "self": {
-                        "href": "/tellus/api/booking/ROOMNAME/"
+                        "href": "/tellus/api/booking/Stage"
                     },
                     "tellus:add-booking": {
                         "title": "Create booking",
@@ -743,6 +743,9 @@ A booking stored in the Bookings database. A booking contains room name which th
 who currently make the booking (include username, firstname, lastname, email and contact number), the time the booking will
 happen and a unique id that identifies this booking in the database.
 
++ Parameters 
+    + name: `Stage` (string)   - The name of the room
+
 ### Booking [GET]
 
 Get a list of all bookings by room name in the system
@@ -796,7 +799,7 @@ Get a list of all bookings by room name in the system
                 
                 "@controls": {
                     "self": {
-                        "href": "/tellus/api/bookings/ROOMNAME/"
+                        "href": "/tellus/api/bookings/Stage/"
                     },
                     "tellus:add-booking": {
                         "title": "Create booking",
@@ -894,7 +897,7 @@ Get a list of all bookings by room name in the system
                     },
                     "tellus:delete": {
                         "title": "Delete booking",
-                        "href": "/tellus/api/bookings/{booking_id}/",
+                        "href": "/tellus/api/bookings/3/",
                         "method": "DELETE"
                     },
                     "tellus:rooms-all": {
@@ -919,12 +922,8 @@ Modify an existence booking by room name, the time information will be change.
     
             {
                 "username": "YoungUno",
-                "bookingTime": "2017-06-25T09:00:00+02:00",
-                "email": "uyoung@cool.com",
-                "familyName": "Young",
-                "givenName": "Uno",
-                "telephone": "04165971265",
-                "name": "Aspire"
+                "bookingTime": "2017-03-01 12:00",
+                "email": "uyoung@cool.com"
             }
 
 + Response 204
@@ -946,7 +945,7 @@ Modify an existence booking by room name, the time information will be change.
                         "Be sure you include all mandatory properties"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/Aspire/"
+                "resource_url": "/tellus/api/bookings/Stage/"
             }
 
 + Response 404 (application/vnd.mason+json)
@@ -962,7 +961,7 @@ Modify an existence booking by room name, the time information will be change.
                         "The wanted-changing booking is non-exist."
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/Aspire/"
+                "resource_url": "/tellus/api/bookings/Stage/"
             }
 
 + Response 415 (application/vnd.mason+json)
@@ -978,7 +977,7 @@ Modify an existence booking by room name, the time information will be change.
                         "Use a JSON compatible format"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/Aspire/"
+                "resource_url": "/tellus/api/bookings/Stage/"
             }
 
 + Response 500  (application/vnd.mason+json)
@@ -994,7 +993,7 @@ Modify an existence booking by room name, the time information will be change.
                         "Cannot access the database"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/Aspire/"
+                "resource_url": "/tellus/api/bookings/Stage/"
             }
 
 
@@ -1010,15 +1009,13 @@ Create a new booking.
         
     + Body 
     
-            
             {
                 "username": "YoungUno",
-                "bookingTime": "2017-06-25T09:00:00+02:00",
+                "bookingTime": "2017-03-01 10:00",
                 "email": "uyoung@cool.com",
                 "familyName": "Young",
                 "givenName": "Uno",
-                "telephone": "04165971265",
-                "name": "Aspire"
+                "telephone": "4165971265"
             }
 
 + Response 201
@@ -1042,7 +1039,7 @@ Create a new booking.
                         "There is something wrong with the booking format."
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/"
+                "resource_url": "/tellus/api/bookings/Stage/"
             }
 
 + Response 409 (application/vnd.mason+json)
@@ -1058,7 +1055,7 @@ Create a new booking.
                         "The new booking was conflicted with an existence booking."
                     ]
                 }
-                "resource_url: "/forum/api/bookings/"
+                "resource_url: "/forum/api/bookings/Stage/"
             }
 
 + Response 415 (application/vnd.mason+json)
@@ -1074,7 +1071,7 @@ Create a new booking.
                         "Use a JSON compatible format"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/"
+                "resource_url": "/tellus/api/bookings/Stage/"
             }
 
 + Response 500  (application/vnd.mason+json)
@@ -1090,9 +1087,15 @@ Create a new booking.
                         "Cannot access the database"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/"
+                "resource_url": "/tellus/api/bookings/Stage/"
             }
 
+
+## Booking Delete [/tellus/api/bookings/{booking_id}/]
+
++ Parameters
+
+    + booking_id: `3` (string) - ID of booking.
 
 ### Delete a booking [DELETE]
 
@@ -1124,7 +1127,7 @@ Delete a booking from the system
                         "There is no a booking to delete"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/{booking_id}/"
+                "resource_url": "/tellus/api/bookings/3/"
             }
 
 
