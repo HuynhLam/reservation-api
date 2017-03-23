@@ -102,6 +102,7 @@ class BookingsDBAPITestCase(unittest.TestCase):
         self.connection.close()
 
     # TESTS FOR Bookings
+    # test_bookings_table_created function makes use of codes from Forum exercise
     def test_bookings_table_created(self):
         '''
         Checks that the table initially contains 5 bookings (check

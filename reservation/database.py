@@ -4,6 +4,7 @@ import sqlite3
 DEFAULT_DB_PATH = "database/tellus.db"
 
 
+# Engine class makes use of codes from Forum exercise
 class Engine(object):
     '''
     Abstraction of the database.
@@ -72,6 +73,7 @@ class Connection(object):
             self.con.close()
 
     # FOREIGN KEY STATUS
+    # check_foreign_keys_status function makes use of codes from Forum exercise
     def check_foreign_keys_status(self):
         '''
         Check if the foreign keys has been activated.
@@ -96,6 +98,7 @@ class Connection(object):
             raise excp
         return is_activated
 
+    # set_foreign_keys_support function makes use of codes from Forum exercise
     def set_foreign_keys_support(self):
         '''
         Activate the support for foreign keys.
@@ -115,6 +118,7 @@ class Connection(object):
             print "Error %s:" % excp.args[0]
             return False
 
+    # unset_foreign_keys_support function makes use of codes from Forum exercise
     def unset_foreign_keys_support(self):
         '''
         Deactivate the support for foreign keys.
@@ -135,6 +139,7 @@ class Connection(object):
             return False
 
     # Helpers
+    # _create_user_object function makes use of codes from Forum exercise
     def _create_user_object(self, row):
         '''
         It takes a database Row and transform it into a python dictionary.
@@ -177,7 +182,8 @@ class Connection(object):
             "email": row["email"],
             "contactnumber": row["contactNumber"]
         }
-
+    
+    # _create_room_object function makes use of codes from Forum exercise
     def _create_room_object(self, row):
         '''
         It takes a database Row and transform it into a python dictionary.
@@ -210,6 +216,7 @@ class Connection(object):
             "resources": row["resources"]
         }
 
+    # _create_booking_object function makes use of codes from Forum exercise
     def _create_booking_object(self, row):
         '''
         It takes a database Row and transform it into a python dictionary.

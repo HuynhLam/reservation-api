@@ -64,6 +64,7 @@ class UserDBAPITestCase(unittest.TestCase):
         self.connection.close()
 
     # Test for Users table.
+    # test_users_table_created function makes use of codes from Forum exercise
     def test_users_table_created(self):
         '''
         Checks that the table initially contains 3 users (check
