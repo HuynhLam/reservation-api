@@ -34,27 +34,6 @@ Deletes the current context. Use via DELETE.
 Return the link relation description in HTML format
 + Response 200 (text/html)
 
-## rooms-all [/link-relations/rooms-all]
-
-This action list all rooms in Tellus. Each item is an instance of the type Room defined in the profile [Room](profiles/room_profile). 
-Can only be accessed through GET.
-
-### GET
-
-Return the link relation description in HTML format
-+ Response 200 (text/html)
-
-## modify-room [/link-relations/modify-room]
-
-This action modifies the picture and room resources details of a specific room. 
-Each item is an instance of the type Room defined in the profile [Room](profiles/room_profile). 
-Can only be accessed through PUT.
-
-### GET
-
-Return the link relation description in HTML format
-+ Response 200 (text/html)
-
 ## bookings-all [/link-relations/bookings-all]
 
 This action list all bookings in the reservation system. 
@@ -66,11 +45,22 @@ Can only be accessed through GET.
 Return the link relation description in HTML format
 + Response 200 (text/html)
 
-## modify-booking [/link-relations/modify-booking]
+## bookings-room [/link-relations/bookings-room]
 
-This action modifies the room name, date, time, first name, last name, email, contact number details of a specific existing booking. 
+This action list all bookings which belongs to one room in the reservation system. 
 Each item is an instance of the type Booking defined in the profile [Booking](profiles/booking_profile). 
-Can only be accessed through PUT.
+Can only be accessed through GET.
+
+### GET
+
+Return the link relation description in HTML format
++ Response 200 (text/html)
+
+## bookings-user [/link-relations/bookings-user]
+
+This action list all bookings which belongs to one user in the reservation system. 
+Each item is an instance of the type Booking defined in the profile [Booking](profiles/booking_profile). 
+Can only be accessed through GET.
 
 ### GET
 
@@ -113,7 +103,7 @@ This profile inherits:
 
 ### Link relations
 
- * [modify-room](reference/link-relations/modify-room)
+ * [bookings-room](reference/link-relations/bookings-room)
 
 ### Semantic Descriptors
 
@@ -155,8 +145,8 @@ This profile inherits:
 ### Link relations
 
  * [add-user](reference/link-relations/add-user)
- * [bookings-all](reference/link-relations/bookings-all)
  * [delete](reference/link-relations/delete)
+ * [bookings-user](reference/link-relations/bookings-user)
 
 ### Semantic Descriptors
 
@@ -191,16 +181,14 @@ This profile inherits:
 
 ### Link relations
 
- * [add-booking](reference/link-relations/add-booking)
- * [bookings-all](reference/link-relations/bookings-all)
- * [modify-booking](reference/link-relations/modify-booking)
  * [delete](reference/link-relations/delete)
 
 ### Semantic Descriptors
 
 #### Data Type Booking
 
- * `username` (string): Username of a user. 
+ * `username` (string): Username of a user.
+ * `booking_id` (integer): Id of booking.
  
 Inherited from [schema.org/Reservation](http://schema.org/Reservation)
  * `bookingTime` (string):See [https://schema.org/bookingTime](https://schema.org/bookingTime)
@@ -271,7 +259,34 @@ Get the list of all Rooms in the system.
                             },
                             "profile": {
                                 "href": "/profiles/room_profile/"
-                            }                            
+                            },
+                            "collection": {
+                                "href": "/tellus/api/rooms/
+                            },
+                            "edit": {
+                                "title": "Modify Room",
+                                "href": "/tellus/api/rooms/Stage",
+                                "encoding": "json",
+                                "method": "PUT",
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "resources": {
+                                            "title": "Resources",
+                                            "description": "Resources avaible in room",
+                                            "type": "string"
+                                        },
+                                        "photo": {
+                                            "title": "Photo",
+                                            "description": "Photo of the room",
+                                            "type": "string"
+                                        },
+                                    }
+                                }
+                            },
+                            "tellus:books-room": {
+                                "href": "/tellus/api/rooms/Stage/bookings"
+                            }
                         }
                     },
                     {
@@ -284,7 +299,34 @@ Get the list of all Rooms in the system.
                             },
                             "profile": {
                                 "href": "/profiles/room_profile/"
-                            }                            
+                            },
+                            "collection": {
+                                "href": "/tellus/api/rooms/
+                            },
+                            "edit": {
+                                "title": "Modify Room",
+                                "href": "/tellus/api/rooms/Aspire",
+                                "encoding": "json",
+                                "method": "PUT",
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "resources": {
+                                            "title": "Resources",
+                                            "description": "Resources avaible in room",
+                                            "type": "string"
+                                        },
+                                        "photo": {
+                                            "title": "Photo",
+                                            "description": "Photo of the room",
+                                            "type": "string"
+                                        },
+                                    }
+                                }
+                            },
+                            "tellus:books-room": {
+                                "href": "/tellus/api/rooms/Aspire/bookings"
+                            }
                         }
                     }
                 ],
@@ -292,33 +334,6 @@ Get the list of all Rooms in the system.
                 "@controls": {
                     "self": {
                         "href": "/tellus/api/rooms/"
-                    },
-                    "tellus:modify-room": {
-                        "title": "Modify Room",
-                        "href": "/tellus/api/rooms/",
-                        "encoding": "json",
-                        "method": "PUT",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "title": "RoomName",
-                                    "description": "Name of the room",
-                                    "type": "string"
-                                },
-                                "resources": {
-                                    "title": "Resources",
-                                    "description": "Resources avaible in room",
-                                    "type": "string"
-                                },
-                                "photo": {
-                                    "title": "Photo",
-                                    "description": "Photo of the room",
-                                    "type": "string"
-                                },
-                            },
-                            "required": ["name"]
-                        }
                     }
                 }
             }
@@ -532,8 +547,113 @@ Each user has a unique username that serves as a unique identifier in the system
 One user cannot register using an existing username.
 
 + Parameters 
-    + username: `paradise` (string)   - The username of the user to search for.
+    + username: `lam` (string)   - The username of the user to search for.
 
+### User [GET]
+
+Get one user in the system.
+
+
++ Relation: self    
++ Request
+    
+    + Headers
+    
+            Accept: application/vnd.mason+json
+    
++ Response 200 (application/vnd.mason+json)
+
+    User was successfully retrieved.
+   
+    + Body 
+    
+            {
+                "@namespaces": {
+                    "tellus": {
+                        "name": "/tellus/link-relations/"
+                    }
+                },
+                "username": "lam",
+                "isAdmin": "False",
+                "email": "lam.huynh@ee.oulu.fi",
+                "familyName": "Huynh",
+                "givenName": "Lam",
+                "telephone": "0411322922"
+                "@controls": {
+                    "self": {
+                        "href": "/tellus/api/users/lam"
+                    },
+                    "profile": {
+                        "href": "/profiles/user_profile/"
+                    },
+                    "tellus:delete": {
+                        "title": "Delete user",
+                        "href": "/tellus/api/users/lam",
+                        "method": "DELETE"
+                    },
+                    "tellus:bookings-user": {
+                        "href": "/tellus/api/users/lam/bookings"
+                    },
+                    "tellus:add-user": {
+                        "title": "Add User",
+                        "href": "/tellus/api/users/",
+                        "encoding": "json",
+                        "method": "POST",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "username": {
+                                    "title": "Username",
+                                    "description": "Username of user",
+                                    "type": "string"
+                                },
+                                "isAdmin": {
+                                    "title": "Admin",
+                                    "description": "Account type to identify User or Admin",
+                                    "type": "boolean"
+                                },
+                                "email": {
+                                    "title": "E-mail",
+                                    "description": "E-mail of user",
+                                    "type": "string"
+                                },
+                                "familyName": {
+                                    "title": "Family Name",
+                                    "description": "Family name of the user",
+                                    "type": "string"
+                                },
+                                "givenName": {
+                                    "title": "Given Name",
+                                    "description": "Given name of the user",
+                                    "type": "string"
+                                },
+                                "telephone": {
+                                    "title": "Phone Number",
+                                    "description": "Phone Number of the user",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["username"]
+                        }
+                    }
+                }
+            }
+
++ Response 404 (application/vnd.mason+json)
+
+    The user with username `username` does not exist in the database.
+        
+    + Body 
+    
+            {
+                "@error": {
+                    "@message": "User does not exist"
+                    "@messages": [
+                        "There is no a user with username lam"
+                    ]
+                }
+                "resource_url": "/tellus/api/users/lam/"
+            }
 
 ### Delete a user [DELETE]
 
@@ -554,7 +674,7 @@ Delete a user from the system
 
 + Response 404 (application/vnd.mason+json)
 
-    The user with nickname `username` does not exist in the database.
+    The user with username `username` does not exist in the database.
         
     + Body 
     
@@ -562,14 +682,14 @@ Delete a user from the system
                 "@error": {
                     "@message": "User does not exist"
                     "@messages": [
-                        "There is no a user with username paradise"
+                        "There is no a user with username lam"
                     ]
                 }
-                "resource_url": "/tellus/api/users/paradise/"
+                "resource_url": "/tellus/api/users/lam/"
             }
 
 
-# Group Booking
+# Group Bookings
 
 All these resources use the [Booking Profile](reference/profiles/booking_profile).
 
@@ -612,11 +732,16 @@ Get a list of all bookings in the system.
                         "bookingTime": "2017-03-01 10:00",
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/booking/Stage"
+                                "href": "/tellus/api/bookings/1/"
                             },
                             "profile": {
                                 "href": "/profiles/booking_profile/"
-                            }                            
+                            },
+                            "tellus:delete": {
+                                "title": "Delete booking",
+                                "href": "/tellus/api/rooms/Stage/bookings/1/",
+                                "method": "DELETE"
+                            }
                         }
                     },
                     {
@@ -625,128 +750,39 @@ Get a list of all bookings in the system.
                         "bookingTime": "2017-03-05 12:00",
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/booking/Chill"
+                                "href": "/tellus/api/bookings/2/"
                             },
                             "profile": {
                                 "href": "/profiles/booking_profile/"
-                            }                            
+                            },
+                            "tellus:delete": {
+                                "title": "Delete booking",
+                                "href": "/tellus/api/rooms/Chill/bookings/2/",
+                                "method": "DELETE"
+                            }
                         }
                     }
                 ],
                 
                 "@controls": {
                     "self": {
-                        "href": "/tellus/api/booking/Stage"
+                        "href": "/tellus/api/bookings"
                     },
-                    "tellus:add-booking": {
-                        "title": "Create booking",
-                        "href": "/tellus/api/bookings/",
-                        "encoding": "json",
-                        "method": "POST",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "username": {
-                                    "title": "User Name",
-                                    "description": "Username of the booking's owner",
-                                    "type": "string"
-                                },
-                                "bookingTime": {
-                                    "title": "Booking Time",
-                                    "description": "Date and time of the booking",
-                                    "type": "string"
-                                },
-                                "email": {
-                                    "title": "Email",
-                                    "description": "Email of the booking's owner",
-                                    "type": "string"
-                                },
-                                "familyName": {
-                                    "title": "Family Name",
-                                    "description": "Family Name of the booking's owner",
-                                    "type": "string"
-                                },
-                                "givenName": {
-                                    "title": "Given Name",
-                                    "description": "Given Name of the booking's owner",
-                                    "type": "string"
-                                },
-                                "telephone": {
-                                    "title": "Telephone",
-                                    "description": "Telephone number of the booking's owner",
-                                    "type": "string"
-                                },
-                                "name": {
-                                    "title": "Room name",
-                                    "description": "Room name which the booking take place",
-                                    "type": "string"
-                                },
-                            },
-                            "required": ["username", "bookingTime", "name"]
-                        }
-                    },
-                    "tellus:modify-booking": {
-                        "title": "Modify Booking",
-                        "href": "/tellus/api/bookings/",
-                        "encoding": "json",
-                        "method": "PUT",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "username": {
-                                    "title": "User Name",
-                                    "description": "Username of the booking's owner",
-                                    "type": "string"
-                                },
-                                "bookingTime": {
-                                    "title": "Booking Time",
-                                    "description": "Date and time of the booking",
-                                    "type": "string"
-                                },
-                                "email": {
-                                    "title": "Email",
-                                    "description": "Email of the booking's owner",
-                                    "type": "string"
-                                },
-                                "familyName": {
-                                    "title": "Family Name",
-                                    "description": "Family Name of the booking's owner",
-                                    "type": "string"
-                                },
-                                "givenName": {
-                                    "title": "Given Name",
-                                    "description": "Given Name of the booking's owner",
-                                    "type": "string"
-                                },
-                                "telephone": {
-                                    "title": "Telephone",
-                                    "description": "Telephone number of the booking's owner",
-                                    "type": "string"
-                                },
-                                "name": {
-                                    "title": "Room name",
-                                    "description": "Room name which the booking take place",
-                                    "type": "string"
-                                },
-                            },
-                            "required": ["username", "bookingTime", "name"]
-                        }
+                    "tellus:history-booking": {
+                        "href": "/tellus/api/bookings/history"
                     }
                 }
             } 
 
 
+## Bookings of Room [/tellus/api/rooms/{name}/bookings]
 
-## Booking [/tellus/api/bookings/{name}/]
-
-A booking stored in the Bookings database. A booking contains room name which the booking will place, information of user
-who currently make the booking (include username, firstname, lastname, email and contact number), the time the booking will
-happen and a unique id that identifies this booking in the database.
+A list of all Bookings for one room.
 
 + Parameters 
     + name: `Stage` (string)   - The name of the room
 
-### Booking [GET]
+### Bookings of Room [GET]
 
 Get a list of all bookings by room name in the system
 
@@ -769,41 +805,155 @@ Get a list of all bookings by room name in the system
                         "name": "/tellus/link-relations/"
                     }
                 },
-                
                 "items": [
                     {
                         "name": "Stage",
-                        "username": "Onur", 
+                        "username": "kirbac",
+                        "bookingTime": "2017-03-01 10:00",
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/bookings/Stage/"
+                                "href": "/tellus/api/rooms/Stage/bookings/1"
                             },
                             "profile": {
                                 "href": "/profiles/booking_profile/"
-                            }                            
+                            },
+                            "collection": {
+                                "href": "/tellus/api/rooms/Stage/bookings"
+                            },
+                            "tellus:delete": {
+                                "title": "Delete booking",
+                                "href": "/tellus/api/rooms/Stage/bookings/1/",
+                                "method": "DELETE"
+                            },
+                            "edit": {
+                                "title": "Modify Booking",
+                                "href": "/tellus/api/bookings/",
+                                "encoding": "json",
+                                "method": "PUT",
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "username": {
+                                            "title": "User Name",
+                                            "description": "Username of the booking's owner",
+                                            "type": "string"
+                                        },
+                                        "bookingTime": {
+                                            "title": "Booking Time",
+                                            "description": "Date and time of the booking",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "title": "Email",
+                                            "description": "Email of the booking's owner",
+                                            "type": "string"
+                                        },
+                                        "familyName": {
+                                            "title": "Family Name",
+                                            "description": "Family Name of the booking's owner",
+                                            "type": "string"
+                                        },
+                                        "givenName": {
+                                            "title": "Given Name",
+                                            "description": "Given Name of the booking's owner",
+                                            "type": "string"
+                                        },
+                                        "telephone": {
+                                            "title": "Telephone",
+                                            "description": "Telephone number of the booking's owner",
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "title": "Room name",
+                                            "description": "Room name which the booking take place",
+                                            "type": "string"
+                                        },
+                                    },
+                                    "required": ["username", "bookingTime", "name"]
+                                }
+                            }
                         }
                     },
                     {
-                        "name": "Aspire",
-                        "username": "Lam",
+                        "name": "Stage",
+                        "username": "lam",
+                        "bookingTime": "2017-03-01 15:00",
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/booking/Aspire/"
+                                "href": "/tellus/api/rooms/Stage/bookings/5"
                             },
                             "profile": {
                                 "href": "/profiles/booking_profile/"
-                            }                            
+                            },
+                            "collection": {
+                                "href": "/tellus/api/rooms/Stage/bookings"
+                            },
+                            "tellus:delete": {
+                                "title": "Delete booking",
+                                "href": "/tellus/api/rooms/Stage/bookings/5/",
+                                "method": "DELETE"
+                            },
+                            "edit": {
+                                "title": "Modify Booking",
+                                "href": "/tellus/api/bookings/",
+                                "encoding": "json",
+                                "method": "PUT",
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "username": {
+                                            "title": "User Name",
+                                            "description": "Username of the booking's owner",
+                                            "type": "string"
+                                        },
+                                        "bookingTime": {
+                                            "title": "Booking Time",
+                                            "description": "Date and time of the booking",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "title": "Email",
+                                            "description": "Email of the booking's owner",
+                                            "type": "string"
+                                        },
+                                        "familyName": {
+                                            "title": "Family Name",
+                                            "description": "Family Name of the booking's owner",
+                                            "type": "string"
+                                        },
+                                        "givenName": {
+                                            "title": "Given Name",
+                                            "description": "Given Name of the booking's owner",
+                                            "type": "string"
+                                        },
+                                        "telephone": {
+                                            "title": "Telephone",
+                                            "description": "Telephone number of the booking's owner",
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "title": "Room name",
+                                            "description": "Room name which the booking take place",
+                                            "type": "string"
+                                        },
+                                    },
+                                    "required": ["username", "bookingTime", "name"]
+                                }
+                            }
                         }
                     }
                 ],
                 
                 "@controls": {
                     "self": {
-                        "href": "/tellus/api/bookings/Stage/"
+                        "href": "/tellus/api/rooms/Stage/bookings"
+                    },
+                    "tellus:bookings-all": {
+                        "href": "/tellus/api/bookings/"
                     },
                     "tellus:add-booking": {
                         "title": "Create booking",
-                        "href": "/tellus/api/bookings/",
+                        "href": "/tellus/api/rooms/Stage/bookings",
                         "encoding": "json",
                         "method": "POST",
                         "schema": {
@@ -847,155 +997,25 @@ Get a list of all bookings by room name in the system
                             },
                             "required": ["username", "bookingTime", "name"]
                         }
-                    },
-                    "tellus:modify-booking": {
-                        "title": "Modify Booking",
-                        "href": "/tellus/api/bookings/",
-                        "encoding": "json",
-                        "method": "PUT",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "username": {
-                                    "title": "User Name",
-                                    "description": "Username of the booking's owner",
-                                    "type": "string"
-                                },
-                                "bookingTime": {
-                                    "title": "Booking Time",
-                                    "description": "Date and time of the booking",
-                                    "type": "string"
-                                },
-                                "email": {
-                                    "title": "Email",
-                                    "description": "Email of the booking's owner",
-                                    "type": "string"
-                                },
-                                "familyName": {
-                                    "title": "Family Name",
-                                    "description": "Family Name of the booking's owner",
-                                    "type": "string"
-                                },
-                                "givenName": {
-                                    "title": "Given Name",
-                                    "description": "Given Name of the booking's owner",
-                                    "type": "string"
-                                },
-                                "telephone": {
-                                    "title": "Telephone",
-                                    "description": "Telephone number of the booking's owner",
-                                    "type": "string"
-                                },
-                                "name": {
-                                    "title": "Room name",
-                                    "description": "Room name which the booking take place",
-                                    "type": "string"
-                                },
-                            },
-                            "required": ["username", "bookingTime", "name"]
-                        }
-                    },
-                    "tellus:delete": {
-                        "title": "Delete booking",
-                        "href": "/tellus/api/bookings/3/",
-                        "method": "DELETE"
-                    },
-                    "tellus:rooms-all": {
-                        "title": "List rooms",
-                        "href": "/tellus/api/rooms/"
                     }
                 }
             }
 
-
-### Modify an existence booking [PUT]       
-
-Modify an existence booking by room name, the time information will be change.  
-
-+ Request (application/json)
-
-    + Headers
-    
-            Accept: application/vnd.mason+json
-        
-    + Body 
-    
-            {
-                "username": "YoungUno",
-                "bookingTime": "2017-03-01 12:00",
-                "email": "uyoung@cool.com"
-            }
-
-+ Response 204
-
-    The booking is modified correctly
-        
-    + Body
-
-+ Response 400 (application/vnd.mason+json)
-
-    The booking format is not well formed. Some of the parameters is not correctly received. 
-    
-    + Body
-    
-            {
-                "@error": {
-                    "@message": "Wrong request format",
-                    "@messages": [
-                        "Be sure you include all mandatory properties"
-                    ]
-                }
-                "resource_url": "/tellus/api/bookings/Stage/"
-            }
-
 + Response 404 (application/vnd.mason+json)
 
-    The booking does not exist in the database.
+    The room with name `name` does not exist in the database.
         
     + Body 
     
             {
                 "@error": {
-                    "@message": "Booking does not exist"
+                    "@message": "Room does not exist"
                     "@messages": [
-                        "The wanted-changing booking is non-exist."
+                        "There is no a room with name Stage"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/Stage/"
+                "resource_url": "/tellus/api/rooms/Stage"
             }
-
-+ Response 415 (application/vnd.mason+json)
-
-    The server cannot understand the format of the response.
-    
-    + Body 
-    
-            {
-                "@error": {
-                    "@message": "Unsupported media type"
-                    "@messages": [
-                        "Use a JSON compatible format"
-                    ]
-                }
-                "resource_url": "/tellus/api/bookings/Stage/"
-            }
-
-+ Response 500  (application/vnd.mason+json)
-
-    The server cannot store the booking in the database.
-    
-    + Body 
-
-            {
-                "@error": {
-                    "@message": "Problem with the database"
-                    "@messages": [
-                        "Cannot access the database"
-                    ]
-                }
-                "resource_url": "/tellus/api/bookings/Stage/"
-            }
-
 
 ### Create a new booking [POST]       
 
@@ -1039,7 +1059,7 @@ Create a new booking.
                         "There is something wrong with the booking format."
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/Stage/"
+                "resource_url": "/tellus/api/rooms/Stage/bookings"
             }
 
 + Response 409 (application/vnd.mason+json)
@@ -1055,7 +1075,7 @@ Create a new booking.
                         "The new booking was conflicted with an existence booking."
                     ]
                 }
-                "resource_url: "/forum/api/bookings/Stage/"
+                "resource_url: "/tellus/api/rooms/Stage/bookings"
             }
 
 + Response 415 (application/vnd.mason+json)
@@ -1071,7 +1091,106 @@ Create a new booking.
                         "Use a JSON compatible format"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/Stage/"
+                "resource_url": "/tellus/api/rooms/Stage/bookings"
+            }
+
++ Response 500  (application/vnd.mason+json)
+
+    The server cannot store the booking in the database.
+    
+    + Body
+    
+            {
+                "@error": {
+                    "@message": "Problem with the database"
+                    "@messages": [
+                        "Cannot access the database"
+                    ]
+                }
+                "resource_url": "/tellus/api/rooms/Stage/bookings"
+            }
+
+
+## Booking of Room [/tellus/api/rooms/{name}/bookings/{booking_id}/]
+
+It is a booking which belongs to specified room. A Booking stored in the Bookings database. A booking contains room name which the booking will place, 
+information of user who currently make the booking (include username, firstname, lastname, email and contact number), the time the booking will
+happen and a unique id that identifies this booking in the database.
+
++ Parameters 
+    + name: `Stage` (string)   - The name of the room
+    + booking_id: `1` (integer) - Id of booking
+
+### Modify an existence booking of room [PUT]       
+
+Modify an existence booking by room name, the time information will be change.  
+
++ Request (application/json)
+
+    + Headers
+    
+            Accept: application/vnd.mason+json
+        
+    + Body 
+    
+            {
+                "username": "YoungUno",
+                "bookingTime": "2017-03-01 12:00",
+                "email": "uyoung@cool.com"
+            }
+
++ Response 204
+
+    The booking is modified correctly
+        
+    + Body
+
++ Response 400 (application/vnd.mason+json)
+
+    The booking format is not well formed. Some of the parameters is not correctly received. 
+    
+    + Body
+    
+            {
+                "@error": {
+                    "@message": "Wrong request format",
+                    "@messages": [
+                        "Be sure you include all mandatory properties"
+                    ]
+                }
+                "resource_url": "/tellus/api/rooms/Stage/bookings/"
+            }
+
++ Response 404 (application/vnd.mason+json)
+
+    The booking does not exist in the database.
+        
+    + Body 
+    
+            {
+                "@error": {
+                    "@message": "Booking does not exist"
+                    "@messages": [
+                        "The wanted-changing booking is non-exist."
+                    ]
+                }
+                "resource_url": "/tellus/api/rooms/Stage/bookings/"
+            }
+
++ Response 415 (application/vnd.mason+json)
+
+    The server cannot understand the format of the response.
+    
+    + Body 
+    
+            {
+                "@error": {
+                    "@message": "Unsupported media type"
+                    "@messages": [
+                        "Use a JSON compatible format"
+                    ]
+                }
+                "resource_url": "/tellus/api/rooms/Stage/bookings/"
             }
 
 + Response 500  (application/vnd.mason+json)
@@ -1087,17 +1206,10 @@ Create a new booking.
                         "Cannot access the database"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/Stage/"
+                "resource_url": "/tellus/api/rooms/Stage/bookings/"
             }
 
-
-## Booking Delete [/tellus/api/bookings/{booking_id}/]
-
-+ Parameters
-
-    + booking_id: `3` (string) - ID of booking.
-
-### Delete a booking [DELETE]
+### Delete a booking of room [DELETE]
 
 Delete a booking from the system
 
@@ -1127,9 +1239,152 @@ Delete a booking from the system
                         "There is no a booking to delete"
                     ]
                 }
-                "resource_url": "/tellus/api/bookings/3/"
+                "resource_url": "/tellus/api/rooms/Stage/bookings/1"
             }
 
+## Bookings of User [/tellus/api/users/{username}/bookings]
+
+A list of all Bookings for one user.
+
++ Parameters 
+    + username: `lam` (string)   - The username of the user
+
+### Bookings of User [GET]
+
+Get a list of all bookings by username in the system
+
++ Relation: self    
++ Request
+    
+    + Headers
+    
+            Accept: application/vnd.mason+json
+    
++ Response 200 (application/vnd.mason+json)
+
+    List Bookings was successfully retrieved.
+   
+    + Body 
+    
+            {
+                "@namespaces": {
+                    "tellus": {
+                        "name": "/tellus/link-relations/"
+                    }
+                },
+                "items": [
+                    {
+                        "name": "Stage",
+                        "username": "lam",
+                        "bookingTime": "2017-03-07 10:00",
+                        "@controls": {
+                            "self": {
+                                "href": "/tellus/api/users/lam/bookings/7"
+                            },
+                            "profile": {
+                                "href": "/profiles/booking_profile/"
+                            },
+                            "collection": {
+                                "href": "/tellus/api/users/lam/bookings/"
+                            },
+                            "tellus:delete": {
+                                "title": "Delete booking",
+                                "href": "/tellus/api/users/lam/bookings/7",
+                                "method": "DELETE"
+                            }
+                        }
+                    },
+                    {
+                        "name": "Chill",
+                        "username": "lam",
+                        "bookingTime": "2017-03-07 16:00",
+                        "@controls": {
+                            "self": {
+                                "href": "/tellus/api/users/lam/bookings/8"
+                            },
+                            "profile": {
+                                "href": "/profiles/booking_profile/"
+                            },
+                            "collection": {
+                                "href": "/tellus/api/users/lam/bookings/"
+                            },
+                            "tellus:delete": {
+                                "title": "Delete booking",
+                                "href": "/tellus/api/users/lam/bookings/8",
+                                "method": "DELETE"
+                            }
+                        }
+                    }
+                ],
+                
+                "@controls": {
+                    "self": {
+                        "href": "/tellus/api/users/lam/bookings"
+                    },
+                    "tellus:bookings-all": {
+                        "href": "/tellus/api/bookings/"
+                    }
+                }
+            }
+
++ Response 404 (application/vnd.mason+json)
+
+    The user with username `username` does not exist in the database.
+        
+    + Body 
+    
+            {
+                "@error": {
+                    "@message": "User does not exist"
+                    "@messages": [
+                        "There is no a user with username lam"
+                    ]
+                }
+                "resource_url": "/tellus/api/users/lam/"
+            }
+
+## Booking of User [/tellus/api/users/{username}/bookings/{booking_id}/]
+
+It is a booking which belongs to specified user. A Booking stored in the Bookings database. A booking contains room name which the booking will place, 
+information of user who currently make the booking (include username, firstname, lastname, email and contact number), the time the booking will
+happen and a unique id that identifies this booking in the database.
+
++ Parameters 
+    + username: `lam` (string)   - The name of the room
+    + booking_id: `7` (integer) - Id of booking
+
+### Delete a booking of room [DELETE]
+
+Delete a booking from the system
+
++ Request
+    
+    + Headers
+    
+            Accept: application/vnd.mason+json
+    
++ Response 204
+
+    The booking was successfully deleted
+        
+    + Body 
+        
+
++ Response 404 (application/vnd.mason+json)
+
+    The booking does not exist in the database.
+        
+    + Body 
+    
+            {
+                "@error": {
+                    "@message": "Booking does not exist"
+                    "@messages": [
+                        "There is no a booking to delete"
+                    ]
+                }
+                "resource_url": "/tellus/api/users/lam/bookings/7/"
+            }
 
 ## History Bookings [/tellus/api/bookings/history{?limit}]
 Get a list of 30 latest successful bookings in the system
@@ -1153,7 +1408,7 @@ Default value of 'limit' is 30 bookings.
 
 + Response 200 (application/vnd.mason+json)
 
-    List Bookings was successfully retrieved.
+    History of Bookings was successfully retrieved.
    
     + Body 
     
@@ -1163,30 +1418,41 @@ Default value of 'limit' is 30 bookings.
                         "name": "/tellus/link-relations/"
                     }
                 },
-                
                 "items": [
                     {
                         "name": "Stage",
-                        "username": "Onur", 
+                        "username": "kirbac",
+                        "bookingTime": "2016-03-01 11:00",
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/bookings/Stage/"
+                                "href": "/tellus/api/bookings/11/"
                             },
                             "profile": {
                                 "href": "/profiles/booking_profile/"
-                            }                            
+                            },
+                            "tellus:delete": {
+                                "title": "Delete booking",
+                                "href": "/tellus/api/rooms/Stage/bookings/11/",
+                                "method": "DELETE"
+                            }
                         }
                     },
                     {
-                        "name": "Aspire",
-                        "username": "Lam",
+                        "name": "Chill",
+                        "username": "paradise",
+                        "bookingTime": "2016-03-05 13:00",
                         "@controls": {
                             "self": {
-                                "href": "/tellus/api/booking/Aspire/"
+                                "href": "/tellus/api/bookings/12/"
                             },
                             "profile": {
                                 "href": "/profiles/booking_profile/"
-                            }                            
+                            },
+                            "tellus:delete": {
+                                "title": "Delete booking",
+                                "href": "/tellus/api/rooms/Chill/bookings/12/",
+                                "method": "DELETE"
+                            }
                         }
                     }
                 ],
@@ -1194,57 +1460,6 @@ Default value of 'limit' is 30 bookings.
                 "@controls": {
                     "self": {
                         "href": "/tellus/api/bookings/history/"
-                    },
-                    "tellus:history-bookings": {
-                        "title": "Booking history",
-                        "href": "/tellus/api/bookings/",
-                        "encoding": "json",
-                        "method": "GET",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "username": {
-                                    "title": "User Name",
-                                    "description": "Username of the booking's owner",
-                                    "type": "string"
-                                },
-                                "bookingTime": {
-                                    "title": "Booking Time",
-                                    "description": "Date and time of the booking",
-                                    "type": "string"
-                                },
-                                "email": {
-                                    "title": "Email",
-                                    "description": "Email of the booking's owner",
-                                    "type": "string"
-                                },
-                                "familyName": {
-                                    "title": "Family Name",
-                                    "description": "Family Name of the booking's owner",
-                                    "type": "string"
-                                },
-                                "givenName": {
-                                    "title": "Given Name",
-                                    "description": "Given Name of the booking's owner",
-                                    "type": "string"
-                                },
-                                "telephone": {
-                                    "title": "Telephone",
-                                    "description": "Telephone number of the booking's owner",
-                                    "type": "string"
-                                },
-                                "name": {
-                                    "title": "Room name",
-                                    "description": "Room name which the booking take place",
-                                    "type": "string"
-                                },
-                            },
-                            "required": ["username", "bookingTime", "name"]
-                        }
-                    },
-                    "tellus:rooms-all": {
-                        "title": "List rooms",
-                        "href": "/tellus/api/rooms/"
                     }
                 }
             }
