@@ -4,6 +4,7 @@ import sqlite3
 DEFAULT_DB_PATH = "database/tellus.db"
 
 
+# Engine class makes use of codes from Forum exercise
 class Engine(object):
     '''
     Abstraction of the database.
@@ -72,6 +73,7 @@ class Connection(object):
             self.con.close()
 
     # FOREIGN KEY STATUS
+    # check_foreign_keys_status function makes use of codes from Forum exercise
     def check_foreign_keys_status(self):
         '''
         Check if the foreign keys has been activated.
@@ -96,6 +98,7 @@ class Connection(object):
             raise excp
         return is_activated
 
+    # set_foreign_keys_support function makes use of codes from Forum exercise
     def set_foreign_keys_support(self):
         '''
         Activate the support for foreign keys.
@@ -115,6 +118,7 @@ class Connection(object):
             print "Error %s:" % excp.args[0]
             return False
 
+    # unset_foreign_keys_support function makes use of codes from Forum exercise
     def unset_foreign_keys_support(self):
         '''
         Deactivate the support for foreign keys.
@@ -135,6 +139,7 @@ class Connection(object):
             return False
 
     # Helpers
+    # _create_user_object function makes use of codes from Forum exercise
     def _create_user_object(self, row):
         '''
         It takes a database Row and transform it into a python dictionary.
@@ -177,7 +182,8 @@ class Connection(object):
             "email": row["email"],
             "contactnumber": row["contactNumber"]
         }
-
+    
+    # _create_room_object function makes use of codes from Forum exercise
     def _create_room_object(self, row):
         '''
         It takes a database Row and transform it into a python dictionary.
@@ -210,6 +216,7 @@ class Connection(object):
             "resources": row["resources"]
         }
 
+    # _create_booking_object function makes use of codes from Forum exercise
     def _create_booking_object(self, row):
         '''
         It takes a database Row and transform it into a python dictionary.
@@ -222,8 +229,8 @@ class Connection(object):
 
                 {
                     "roomname": '',
-                    "date": '',
-                    "time": '',
+                    "username": '',
+                    "bookingTime": '',
                     "firstname": '',
                     "lastname": '',
                     "email": '',
@@ -233,8 +240,8 @@ class Connection(object):
             where:
 
             * ``roomname``: Name of room to be booked.
-            * ``date``: Date of booking.
-            * ``time``: Time of booking.
+            * ``username``: User name of the user create the booking.
+            * ``bookingTime``: Date and time of booking.
             * ``firstname``: First name of user.
             * ``lastname``: Last name of user.
             * ``email``: Email of user.
@@ -245,8 +252,8 @@ class Connection(object):
         '''
         return {
             "roomname": row["roomName"],
-            "date": str(row["date"]),
-            "time": str(row["time"]),
+            "username": str(row["username"]),
+            "bookingTime": str(row["bookingTime"]),
             "firstname": row["firstName"],
             "lastname": row["lastName"],
             "email": row["email"],
@@ -450,8 +457,8 @@ class Connection(object):
             the following keys:
 
             * ``roomname``: Name of room to be booked.
-            * ``date``: Date of booking.
-            * ``time``: Time of booking.
+            * ``username``: user name of user who create the booking.
+            * ``bookingTime``: Date and time of the booking.
             * ``firstname``: First name of user.
             * ``lastname``: Last name of user.
             * ``email``: Email of user.
@@ -484,24 +491,24 @@ class Connection(object):
             bookings.append(self._create_booking_object(row))
         return bookings
 
-    def add_booking(self, roomname, date, time, booking_dict):
+    def add_booking(self, roomname, username, bookingTime, booking_dict):
         '''
         Add the information of a booking.
 
         :param string roomname: The name of the room to book
-        :param string date: The date of the booking to book
-        :param string time: The time of the booking to book
+        :param string username: The user name of user who create the booking
+        :param string bookingTime: Date and time of the booking
         :param dict booking: a dictionary with the information to be modified.
 
-        :return: tuple booking: a tuple which includes roomname date and time
+        :return: tuple booking: a tuple which includes roomname username and bookingTime
             it returns None if booking is not added to database.
 
         '''
         # Create the SQL Statements
         # SQL Statement for extracting the bookingID given a bookingID
-        query1 = 'SELECT bookingID from Bookings WHERE roomName = ? AND date = ? AND time = ?'
+        query1 = 'SELECT bookingID from Bookings WHERE roomName = ? AND username = ? AND bookingTime = ?'
         # SQL Statement to create the row in  Bookings table
-        query2 = 'INSERT INTO Bookings(roomName, date, time, firstName, lastName, email, contactNumber)\
+        query2 = 'INSERT INTO Bookings(roomName, username, bookingTime, firstName, lastName, email, contactNumber)\
                                         VALUES(?,?,?,?,?,?,?)'
         # Check dict
         if not 'firstname' in booking_dict:
@@ -514,12 +521,12 @@ class Connection(object):
             return None
 
         # Activate foreign key support
-        #self.set_foreign_keys_support()
+        self.set_foreign_keys_support()
         # Cursor and row initialization
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
-        # Execute the statement to extract the roomname, date, time associated to a bookingID
-        pvalue = (roomname, int(date), int(time))
+        # Execute the statement to extract the roomname, username, bookingTime associated to a bookingID
+        pvalue = (roomname, username, bookingTime)
         cur.execute(query1, pvalue)
         # Returns row if already exists
         row = cur.fetchone()
@@ -527,42 +534,42 @@ class Connection(object):
         if row is None:
             # Add the row in Bookings table
             # Execute the statement
-            pvalue = (roomname, int(date), int(time), booking_dict['firstname'], booking_dict['lastname'],
+            pvalue = (roomname, username, bookingTime, booking_dict['firstname'], booking_dict['lastname'],
                       booking_dict['email'], booking_dict['contactnumber'])
             cur.execute(query2, pvalue)
             self.con.commit()
-            # We do not do any comprobation and return the roomname date time
-            return roomname, date, time
+            # We do not do any comprobation and return the roomname username bookingTime
+            return roomname, username, bookingTime
         else:
             return None
 
-    def modify_booking(self, roomname, date, time, booking_dict):
+    def modify_booking(self, roomname, username, bookingTime, booking_dict):
         '''
         Modify the information of a booking.
 
         :param string roomname: The name of the room to book
-        :param string date: The date of the booking to book
-        :param string time: The time of the booking to book
+        :param string username: The user name of user who create the booking
+        :param string bookingTime: Date and bookingTime of the booking
         :param dict booking: a dictionary with the information to be modified.
 
-        :return: tuple booking: a tuple which includes roomname date and time
+        :return: tuple booking: a tuple which includes roomname username and bookingTime
             it returns None if booking is not modify in database.
 
         '''
         # Create the SQL Statements
         # SQL Statement for extracting the bookingID given a bookingID
-        query1 = 'SELECT bookingID from Bookings WHERE roomName = ? AND date = ? AND time = ?'
+        query1 = 'SELECT bookingID from Bookings WHERE roomName = ? AND username = ? AND bookingTime = ?'
         # SQL Statement to create the row in Bookings table
-        query2 = 'UPDATE Bookings SET roomName=?, date=?, time=?, firstName=?,\
+        query2 = 'UPDATE Bookings SET roomName=?, username=?, bookingTime=?, firstName=?,\
                                     lastName=?, email=?, contactNumber=?\
-                                    WHERE roomName = ? AND date = ? AND time = ?'
+                                    WHERE roomName = ? AND username = ? AND bookingTime = ?'
 
         # Check dict
         if not 'roomname' in booking_dict:
             return None
-        if not 'date' in booking_dict:
+        if not 'username' in booking_dict:
             return None
-        if not 'time' in booking_dict:
+        if not 'bookingTime' in booking_dict:
             return None
         if not 'firstname' in booking_dict:
             return None
@@ -575,19 +582,19 @@ class Connection(object):
 
         #temporal variables
         _roomname       = booking_dict.get('roomname', None)
-        _date           = booking_dict.get('date', None)
-        _time           = booking_dict.get('time', None)
+        _username       = booking_dict.get('username', None)
+        _bookingtime    = booking_dict.get('bookingTime', None)
         _firstname      = booking_dict.get('firstname', None)
         _lastname       = booking_dict.get('lastname', None)
         _email          = booking_dict.get('email', None)
         _contactnumber  = booking_dict.get('contactnumber', None)
         # Activate foreign key support
-        #self.set_foreign_keys_support()
+        self.set_foreign_keys_support()
         # Cursor and row initialization
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
-        # Execute the statement to extract the roomname, date, time associated to a bookingID
-        pvalue = (roomname, int(date), int(time))
+        # Execute the statement to extract the roomname, username, bookingTime associated to a bookingID
+        pvalue = (roomname, username, bookingTime)
         cur.execute(query1, pvalue)
         # Returns row if already exists
         row = cur.fetchone()
@@ -597,25 +604,27 @@ class Connection(object):
         else:
             # Update the row in Bookings table
             # Execute the statement
-            pvalue = (_roomname, _date, _time, _firstname, _lastname, _email, _contactnumber, roomname, int(date), int(time))
+            pvalue = (_roomname, _username, _bookingtime, _firstname, _lastname, _email, _contactnumber, roomname, username, bookingTime)
             cur.execute(query2, pvalue)
             self.con.commit()
-            # We do not do any comprobation and return the roomname date time
-            return _roomname, _date, _time
+            # We do not do any comprobation and return the roomname username bookingTime
+            return _roomname, _username, _bookingtime
 
-    def delete_booking(self, roomName, date, time):
+    def delete_booking(self, roomName, username, bookingTime):
         '''
         Delete the booking with id given as parameter.
         :return: True if the booking has been deleted, False otherwise
 
         '''
         #Create the SQL Statements
-        query = "DELETE FROM Bookings WHERE roomName = ? AND date = ? AND time = ?"
+        query = "DELETE FROM Bookings WHERE roomName = ? AND username = ? AND bookingTime = ?"
+        # Activate foreign key support
+        self.set_foreign_keys_support()
         #Cursor and row initialization
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         #Execute the statement to delete
-        pvalue = (roomName, date, time)
+        pvalue = (roomName, username, bookingTime)
         cur.execute(query, pvalue)
         self.con.commit()
         #Check that it has been deleted

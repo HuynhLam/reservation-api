@@ -3,8 +3,8 @@ Database interface testing for all bookings related methods.
 The booking has a data model represented by the following User dictionary:
     {
         "roomname": '',
-        "date": '',
-        "time": '',
+        "username": '',
+        "bookingTime": '',
         "firstname": '',
         "lastname": '',
         "email": '',
@@ -14,8 +14,8 @@ The booking has a data model represented by the following User dictionary:
     where:
 
     * ``roomname``: Name of room to be booked.
-    * ``date``: Date of booking.
-    * ``time``: Time of booking.
+    * ``username``: User name of the user create the booking.
+    * ``bookingTime``: Date and time of the booking.
     * ``firstname``: First name of user.
     * ``lastname``: Last name of user.
     * ``email``: Email of user.
@@ -36,49 +36,49 @@ ROOMNAME2 = 'Chill'
 WRONG_ROOMNAME = 'Vodka'
 
 BOOKING1 = {'roomname': 'Stage',
-            'date': '20170301',
-            'time': '1000',
+            'username': 'onur',
+            'bookingTime': '2017-03-01 12:00',
             'firstname': 'Onur',
             'lastname': 'Ozuduru',
             'email': 'onur.ozuduru@ee.oulu.fi',
             'contactnumber': '0411311911'}
 BOOKING2 = {'roomname': 'Chill',
-            'date': '2017035',
-            'time': '1200',
+            'bookingTime': '2017-03-27 16:00',
+            'username': 'para',
             'firstname': 'Paramartha',
             'lastname': 'Narendradhipa',
             'email': 'paramartha.n@ee.oulu.fi',
             'contactnumber': '0417511944'}
-NON_EXIST_BOOKING = {'roomname': 'Vodka',
-                        'date': '20181212',
-                        'time': '0800',
+NON_EXIST_BOOKING = {   'roomname': 'Vodka',
+                        'bookingTime': '2017-03-01 12:00',
+                        'username': 'para',
                         'firstname': 'Paramartha',
                         'lastname': 'Narendradhipa',
                         'email': 'paramartha.n@ee.oulu.fi',
                         'contactnumber': '0417511944'}
 NEW_BOOKING_ROOMNAME = 'Stage'
-NEW_BOOKING_DATE = '20181231'
-NEW_BOOKING_TIME = '0800'
-NEW_BOOKING = {'roomname': 'Chill',
-                    'date': '20181231',
-                    'time': '0800',
+NEW_BOOKING_USERNAME = 'lam'
+NEW_BOOKING_BOOKINGTIME = '2222-22-07 22:00'
+NEW_BOOKING = {     'roomname': 'Chill',
+                    'bookingTime': '2017-03-01 12:00',
+                    'username': 'para',
                     'firstname': 'Paramartha',
                     'lastname': 'Narendradhipa',
                     'email': 'paramartha.n@ee.oulu.fi',
                     'contactnumber': '0417511944'}
 MODIFY_BOOKING_ROOMNAME = 'Aspire'
-MODIFY_BOOKING_DATE = '20171015'
-MODIFY_BOOKING_TIME = '1135'
-MODIFY_BOOKING = {'roomname': 'Stage',
-                    'date': '20170803',
-                    'time': '1151',
+MODIFY_BOOKING_USERNAME = 'lam'
+MODIFY_BOOKING_BOOKINGTIME = '2017-04-15 09:00'
+MODIFY_BOOKING = {  'roomname': 'Aspire',
+                    'bookingTime': '2018-17-07 17:00',
+                    'username': 'lam',
                     'firstname': 'Lam',
                     'lastname': 'Huynh',
                     'email': 'lam.huynh@ee.oulu.fi',
                     'contactnumber': '0411322922'}
 MODIFY_NONEXISTING_BOOKING_ROOMNAME = 'Vodka'
-MODIFY_NONEXISTING_BOOKING_DATE = '20180716'
-MODIFY_NONEXISTING_BOOKING_TIME = '1510'
+MODIFY_NONEXISTING_BOOKING_USERNAME = 'cloud'
+MODIFY_NONEXISTING_BOOKING_BOOKINGTIME = '2017-03-11 25:00'
 INITIAL_SIZE_BOOKING = 5
 
 
@@ -102,6 +102,7 @@ class BookingsDBAPITestCase(unittest.TestCase):
         self.connection.close()
 
     # TESTS FOR Bookings
+    # test_bookings_table_created function makes use of codes from Forum exercise
     def test_bookings_table_created(self):
         '''
         Checks that the table initially contains 5 bookings (check
@@ -176,11 +177,11 @@ class BookingsDBAPITestCase(unittest.TestCase):
         '''
         print '(' + self.test_delete_booking.__name__ + ')', \
             self.test_delete_booking.__doc__
-        resp = self.connection.delete_booking(BOOKING1['roomname'], int(BOOKING1['date']), int(BOOKING1['time']))
+        resp = self.connection.delete_booking(BOOKING1['roomname'], BOOKING1['username'], BOOKING1['bookingTime'])
         self.assertTrue(resp)
         # Check is the booking really was deleted
         # Create the SQL Statement
-        query = "SELECT * FROM Bookings WHERE roomname = ? AND date = ? AND time = ?" 
+        query = "SELECT * FROM Bookings WHERE roomname = ? AND username = ? AND bookingTime = ?" 
         # Connects to the database.
         con = self.connection.con
         with con:
@@ -188,7 +189,7 @@ class BookingsDBAPITestCase(unittest.TestCase):
             con.row_factory = sqlite3.Row
             cur = con.cursor()
             # Execute main SQL Statement
-            pvalue = (BOOKING1['roomname'], BOOKING1['date'], BOOKING1['time'])
+            pvalue = (BOOKING1['roomname'], BOOKING1['username'], BOOKING1['bookingTime'])
             cur.execute(query, pvalue)
             bookings = cur.fetchall()
             # Assert, len(bookings)>0 means delete booking was done improperly
@@ -204,7 +205,7 @@ class BookingsDBAPITestCase(unittest.TestCase):
         print '(' + self.test_delete_non_exist_booking.__name__ + ')', \
             self.test_delete_non_exist_booking.__doc__
         # Test delete_booking with a non existing booking
-        resp = self.connection.delete_booking(NON_EXIST_BOOKING['roomname'], NON_EXIST_BOOKING['date'], NON_EXIST_BOOKING['time'])
+        resp = self.connection.delete_booking(NON_EXIST_BOOKING['roomname'], NON_EXIST_BOOKING['username'], NON_EXIST_BOOKING['bookingTime'])
         self.assertFalse(resp)
 
     def test_add_booking(self):
@@ -213,13 +214,13 @@ class BookingsDBAPITestCase(unittest.TestCase):
         '''
         print '(' + self.test_add_booking.__name__ + ')', \
             self.test_add_booking.__doc__
-        booking = self.connection.add_booking(NEW_BOOKING_ROOMNAME, NEW_BOOKING_DATE, NEW_BOOKING_TIME, NEW_BOOKING)
+        booking = self.connection.add_booking(NEW_BOOKING_ROOMNAME, NEW_BOOKING_USERNAME, NEW_BOOKING_BOOKINGTIME, NEW_BOOKING)
         self.assertIsNotNone(booking)
-        self.assertTupleEqual((NEW_BOOKING_ROOMNAME, NEW_BOOKING_DATE, NEW_BOOKING_TIME), booking)
+        self.assertTupleEqual((NEW_BOOKING_ROOMNAME, NEW_BOOKING_USERNAME, NEW_BOOKING_BOOKINGTIME), booking)
         # Check that booking is really created
         # Create the SQL Statement
         keys_on = 'PRAGMA foreign_keys = ON'
-        query = "SELECT * FROM Bookings WHERE roomName = '%s' AND date = %i AND time = %i" % (NEW_BOOKING_ROOMNAME, int(NEW_BOOKING_DATE), int(NEW_BOOKING_TIME))
+        query = "SELECT * FROM Bookings WHERE roomName = '%s' AND username = '%s' AND bookingTime = '%s'" % (NEW_BOOKING_ROOMNAME, NEW_BOOKING_USERNAME, NEW_BOOKING_BOOKINGTIME)
         # Connects to the database.
         con = self.connection.con
         with con:
@@ -239,11 +240,11 @@ class BookingsDBAPITestCase(unittest.TestCase):
 
     def test_add_existing_booking(self):
         '''
-        Test that I cannot add two booking with the same room name, date, and time
+        Test that I cannot add two booking with the same room name, username, and bookingTime
         '''
         print '(' + self.test_add_existing_booking.__name__ + ')', \
             self.test_add_existing_booking.__doc__
-        booking = self.connection.add_booking(ROOMNAME1, BOOKING1['date'], BOOKING1['time'], BOOKING1)
+        booking = self.connection.add_booking(ROOMNAME1, BOOKING1['username'], BOOKING1['bookingTime'], BOOKING1)
         self.assertIsNone(booking)
 
     def test_add_booking_empty_dict(self):
@@ -252,7 +253,7 @@ class BookingsDBAPITestCase(unittest.TestCase):
         '''
         print '(' + self.test_add_booking_empty_dict.__name__ + ')', \
             self.test_add_booking_empty_dict.__doc__
-        booking = self.connection.add_booking(ROOMNAME1, BOOKING1['date'], BOOKING1['time'], {})
+        booking = self.connection.add_booking(ROOMNAME1, BOOKING1['username'], BOOKING1['bookingTime'], {})
         self.assertIsNone(booking)
 
     def test_modify_booking(self):
@@ -261,14 +262,14 @@ class BookingsDBAPITestCase(unittest.TestCase):
         '''
         print '(' + self.test_modify_booking.__name__ + ')', \
             self.test_modify_booking.__doc__
-        booking = self.connection.modify_booking(MODIFY_BOOKING_ROOMNAME, MODIFY_BOOKING_DATE, MODIFY_BOOKING_TIME, MODIFY_BOOKING)
+        booking = self.connection.modify_booking(MODIFY_BOOKING_ROOMNAME, MODIFY_BOOKING_USERNAME, MODIFY_BOOKING_BOOKINGTIME, MODIFY_BOOKING)
         #Check is the modified OK
         self.assertIsNotNone(booking)
         #If it is OK, check the return values
-        self.assertTupleEqual((MODIFY_BOOKING['roomname'], MODIFY_BOOKING['date'], MODIFY_BOOKING['time']), booking)
+        self.assertTupleEqual((MODIFY_BOOKING['roomname'], MODIFY_BOOKING['username'], MODIFY_BOOKING['bookingTime']), booking)
         # Check that booking is really modified
         # Create the SQL Statement
-        query = "SELECT * FROM Bookings WHERE roomName=? AND date=? AND time=?"
+        query = "SELECT * FROM Bookings WHERE roomName=? AND username=? AND bookingTime=?"
         # Connects to the database.
         con = self.connection.con
         with con:
@@ -276,7 +277,7 @@ class BookingsDBAPITestCase(unittest.TestCase):
             con.row_factory = sqlite3.Row
             cur = con.cursor()
             # Execute main SQL Statement
-            pvalue = (MODIFY_BOOKING['roomname'], int(MODIFY_BOOKING['date']), int(MODIFY_BOOKING['time']))
+            pvalue = (MODIFY_BOOKING['roomname'], MODIFY_BOOKING['username'], MODIFY_BOOKING['bookingTime'])
             cur.execute(query, pvalue)
             booking = cur.fetchall()
             # Assert
@@ -291,7 +292,7 @@ class BookingsDBAPITestCase(unittest.TestCase):
         '''
         print '(' + self.test_modify_nonexisting_booking.__name__ + ')', \
             self.test_modify_nonexisting_booking.__doc__
-        booking = self.connection.modify_booking(MODIFY_NONEXISTING_BOOKING_ROOMNAME, MODIFY_NONEXISTING_BOOKING_DATE, MODIFY_NONEXISTING_BOOKING_TIME, MODIFY_BOOKING)
+        booking = self.connection.modify_booking(MODIFY_NONEXISTING_BOOKING_ROOMNAME, MODIFY_NONEXISTING_BOOKING_USERNAME, MODIFY_NONEXISTING_BOOKING_BOOKINGTIME, MODIFY_BOOKING)
         self.assertIsNone(booking)
 
     def test_modify_booking_empty_dict(self):
@@ -300,7 +301,7 @@ class BookingsDBAPITestCase(unittest.TestCase):
         '''
         print '(' + self.test_modify_booking_empty_dict.__name__ + ')', \
             self.test_modify_booking_empty_dict.__doc__
-        booking = self.connection.modify_booking(NEW_BOOKING_ROOMNAME, NEW_BOOKING_DATE, NEW_BOOKING_TIME, {})
+        booking = self.connection.modify_booking(NEW_BOOKING_ROOMNAME, NEW_BOOKING_USERNAME, NEW_BOOKING_BOOKINGTIME, {})
         self.assertIsNone(booking)
 
 if __name__ == '__main__':
