@@ -10,8 +10,8 @@ DB_FOLDER="database/"
 DB_SCHEMA_FILE_NAME="tellus_schema_dump.sql"
 DB_DATA_FILE_NAME="tellus_data_dump.sql"
 DB_TEST_FILE_NAME="test_tellus.db"
-TEST_FOLDER="tests/"
-declare -a test_files=("tests_database_api_bookings" "tests_database_api_users" "tests_database_api_rooms")
+TEST_FOLDER="tests"
+declare -a test_files=("tests_database_api_users" "tests_database_api_rooms" "tests_database_api_bookings")
 
 function create_test_db {
     ## Check database folder exists
@@ -56,13 +56,13 @@ for i in "${test_files[@]}"
 do
     # First create test db
     create_test_db
-    if [ ! -f "$TEST_FOLDER$i" ]; then
+    if [ ! -f "$TEST_FOLDER/$i" ]; then
         echo "Test file $i is running."
         echo ".........................."
-        python -m $TEST_FOLDER$i
+        python -m $TEST_FOLDER.$i
     fi
-
-    ## Remove old test database
+    
+    ## Remove the test_tellus.db when run the final model
     if [ -f "$DB_FOLDER$DB_TEST_FILE_NAME" ]; then
         echo "Removing old test database."
         echo ".........................."

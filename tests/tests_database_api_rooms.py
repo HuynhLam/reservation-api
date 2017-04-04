@@ -68,6 +68,7 @@ class RoomsDBAPITestCase(unittest.TestCase):
         self.connection.close()
 
     # Test init Rooms table.
+    # test_rooms_table_created function makes use of codes from Forum exercise
     def test_rooms_table_created(self):
         '''
         Checks that the table initially contains 3 Rooms.
@@ -91,6 +92,7 @@ class RoomsDBAPITestCase(unittest.TestCase):
             self.assertEquals(len(rooms), INITIAL_ROOMS_SIZE)
 
     # Test _create_room_object method.
+    # test_create_room_object function makes use of codes from Forum exercise
     def test_create_room_object(self):
         '''
         Check that the method _create_room_object works properly and 
