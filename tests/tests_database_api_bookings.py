@@ -35,21 +35,24 @@ ROOMNAME1 = 'Stage'
 ROOMNAME2 = 'Chill'
 WRONG_ROOMNAME = 'Vodka'
 
-BOOKING1 = {'roomname': 'Stage',
+BOOKING1 = {'bookingID': 1,
+            'roomname': 'Stage',
             'username': 'onur',
             'bookingTime': '2017-03-01 12:00',
             'firstname': 'Onur',
             'lastname': 'Ozuduru',
             'email': 'onur.ozuduru@ee.oulu.fi',
             'contactnumber': '0411311911'}
-BOOKING2 = {'roomname': 'Chill',
+BOOKING2 = {'bookingID': 2,
+            'roomname': 'Chill',
             'bookingTime': '2017-03-27 16:00',
             'username': 'para',
             'firstname': 'Paramartha',
             'lastname': 'Narendradhipa',
             'email': 'paramartha.n@ee.oulu.fi',
             'contactnumber': '0417511944'}
-NON_EXIST_BOOKING = {   'roomname': 'Vodka',
+NON_EXIST_BOOKING = {   'bookingID': 1441,
+                        'roomname': 'Vodka',
                         'bookingTime': '2017-03-01 12:00',
                         'username': 'para',
                         'firstname': 'Paramartha',
@@ -66,16 +69,19 @@ NEW_BOOKING = {     'roomname': 'Chill',
                     'lastname': 'Narendradhipa',
                     'email': 'paramartha.n@ee.oulu.fi',
                     'contactnumber': '0417511944'}
+MODIFY_BOOKING_BOOKINGID = 3
 MODIFY_BOOKING_ROOMNAME = 'Aspire'
 MODIFY_BOOKING_USERNAME = 'lam'
 MODIFY_BOOKING_BOOKINGTIME = '2017-04-15 09:00'
-MODIFY_BOOKING = {  'roomname': 'Aspire',
+MODIFY_BOOKING = {  'bookingID': 3,
+                    'roomname': 'Aspire',
                     'bookingTime': '2018-17-07 17:00',
                     'username': 'lam',
                     'firstname': 'Lam',
                     'lastname': 'Huynh',
                     'email': 'lam.huynh@ee.oulu.fi',
                     'contactnumber': '0411322922'}
+MODIFY_NONEXISTING_BOOKING_BOOKINGID = 1441
 MODIFY_NONEXISTING_BOOKING_ROOMNAME = 'Vodka'
 MODIFY_NONEXISTING_BOOKING_USERNAME = 'cloud'
 MODIFY_NONEXISTING_BOOKING_BOOKINGTIME = '2017-03-11 25:00'
@@ -141,10 +147,10 @@ class BookingsDBAPITestCase(unittest.TestCase):
         # ROOMNAME2 are correct:
         for booking in bookings:
             if booking['roomname'] == ROOMNAME1 and booking['firstname'] == BOOKING1['firstname']:
-                self.assertEquals(len(booking), 7)
+                self.assertEquals(len(booking), 8)
                 self.assertDictContainsSubset(booking, BOOKING1)
             elif booking['roomname'] == ROOMNAME2 and booking['firstname'] == BOOKING2['firstname']:
-                self.assertEquals(len(booking), 7)
+                self.assertEquals(len(booking), 8)
                 self.assertDictContainsSubset(booking, BOOKING2)
 
     def test_get_bookings_specific_roomname(self):
@@ -173,15 +179,15 @@ class BookingsDBAPITestCase(unittest.TestCase):
 
     def test_delete_booking(self):
         '''
-        Test that booking at room: 'Stage' on 2017-03-01 10:00 is deleted successfully
+        Test that booking at room: 'Stage' on 2017-03-01 10:00 with bookingID: 1 is deleted successfully
         '''
         print '(' + self.test_delete_booking.__name__ + ')', \
             self.test_delete_booking.__doc__
-        resp = self.connection.delete_booking(BOOKING1['roomname'], BOOKING1['username'], BOOKING1['bookingTime'])
+        resp = self.connection.delete_booking(BOOKING1['bookingID'], BOOKING1['roomname'], BOOKING1['username'], BOOKING1['bookingTime'])
         self.assertTrue(resp)
         # Check is the booking really was deleted
         # Create the SQL Statement
-        query = "SELECT * FROM Bookings WHERE roomname = ? AND username = ? AND bookingTime = ?" 
+        query = "SELECT * FROM Bookings WHERE bookingID = ? AND roomname = ? AND username = ? AND bookingTime = ?" 
         # Connects to the database.
         con = self.connection.con
         with con:
@@ -189,7 +195,7 @@ class BookingsDBAPITestCase(unittest.TestCase):
             con.row_factory = sqlite3.Row
             cur = con.cursor()
             # Execute main SQL Statement
-            pvalue = (BOOKING1['roomname'], BOOKING1['username'], BOOKING1['bookingTime'])
+            pvalue = (BOOKING1['bookingID'], BOOKING1['roomname'], BOOKING1['username'], BOOKING1['bookingTime'])
             cur.execute(query, pvalue)
             bookings = cur.fetchall()
             # Assert, len(bookings)>0 means delete booking was done improperly
@@ -205,18 +211,22 @@ class BookingsDBAPITestCase(unittest.TestCase):
         print '(' + self.test_delete_non_exist_booking.__name__ + ')', \
             self.test_delete_non_exist_booking.__doc__
         # Test delete_booking with a non existing booking
-        resp = self.connection.delete_booking(NON_EXIST_BOOKING['roomname'], NON_EXIST_BOOKING['username'], NON_EXIST_BOOKING['bookingTime'])
+        resp = self.connection.delete_booking(NON_EXIST_BOOKING['bookingID'], NON_EXIST_BOOKING['roomname'],\
+                                            NON_EXIST_BOOKING['username'], NON_EXIST_BOOKING['bookingTime'])
         self.assertFalse(resp)
 
     def test_add_booking(self):
         '''
         Test that I can add new booking
         '''
+
         print '(' + self.test_add_booking.__name__ + ')', \
             self.test_add_booking.__doc__
         booking = self.connection.add_booking(NEW_BOOKING_ROOMNAME, NEW_BOOKING_USERNAME, NEW_BOOKING_BOOKINGTIME, NEW_BOOKING)
+        global INITIAL_SIZE_BOOKING
+        # Check that insert booking is not return None
         self.assertIsNotNone(booking)
-        self.assertTupleEqual((NEW_BOOKING_ROOMNAME, NEW_BOOKING_USERNAME, NEW_BOOKING_BOOKINGTIME), booking)
+        self.assertTupleEqual((INITIAL_SIZE_BOOKING+1, NEW_BOOKING_ROOMNAME, NEW_BOOKING_USERNAME, NEW_BOOKING_BOOKINGTIME), booking)
         # Check that booking is really created
         # Create the SQL Statement
         keys_on = 'PRAGMA foreign_keys = ON'
@@ -235,7 +245,6 @@ class BookingsDBAPITestCase(unittest.TestCase):
             # Assert
             self.assertEquals(len(booking), 1)
             if len(booking) == 1:
-                global INITIAL_SIZE_BOOKING
                 INITIAL_SIZE_BOOKING += 1
 
     def test_add_existing_booking(self):
@@ -262,11 +271,11 @@ class BookingsDBAPITestCase(unittest.TestCase):
         '''
         print '(' + self.test_modify_booking.__name__ + ')', \
             self.test_modify_booking.__doc__
-        booking = self.connection.modify_booking(MODIFY_BOOKING_ROOMNAME, MODIFY_BOOKING_USERNAME, MODIFY_BOOKING_BOOKINGTIME, MODIFY_BOOKING)
+        booking = self.connection.modify_booking(MODIFY_BOOKING_BOOKINGID, MODIFY_BOOKING_ROOMNAME, MODIFY_BOOKING_USERNAME, MODIFY_BOOKING_BOOKINGTIME, MODIFY_BOOKING)
         #Check is the modified OK
         self.assertIsNotNone(booking)
         #If it is OK, check the return values
-        self.assertTupleEqual((MODIFY_BOOKING['roomname'], MODIFY_BOOKING['username'], MODIFY_BOOKING['bookingTime']), booking)
+        self.assertTupleEqual((MODIFY_BOOKING['bookingID'], MODIFY_BOOKING['roomname'], MODIFY_BOOKING['username'], MODIFY_BOOKING['bookingTime']), booking)
         # Check that booking is really modified
         # Create the SQL Statement
         query = "SELECT * FROM Bookings WHERE roomName=? AND username=? AND bookingTime=?"
@@ -292,7 +301,8 @@ class BookingsDBAPITestCase(unittest.TestCase):
         '''
         print '(' + self.test_modify_nonexisting_booking.__name__ + ')', \
             self.test_modify_nonexisting_booking.__doc__
-        booking = self.connection.modify_booking(MODIFY_NONEXISTING_BOOKING_ROOMNAME, MODIFY_NONEXISTING_BOOKING_USERNAME, MODIFY_NONEXISTING_BOOKING_BOOKINGTIME, MODIFY_BOOKING)
+        booking = self.connection.modify_booking(MODIFY_NONEXISTING_BOOKING_BOOKINGID, MODIFY_NONEXISTING_BOOKING_ROOMNAME, \
+                                                MODIFY_NONEXISTING_BOOKING_USERNAME, MODIFY_NONEXISTING_BOOKING_BOOKINGTIME, MODIFY_BOOKING)
         self.assertIsNone(booking)
 
     def test_modify_booking_empty_dict(self):
@@ -301,7 +311,7 @@ class BookingsDBAPITestCase(unittest.TestCase):
         '''
         print '(' + self.test_modify_booking_empty_dict.__name__ + ')', \
             self.test_modify_booking_empty_dict.__doc__
-        booking = self.connection.modify_booking(NEW_BOOKING_ROOMNAME, NEW_BOOKING_USERNAME, NEW_BOOKING_BOOKINGTIME, {})
+        booking = self.connection.modify_booking(BOOKING2['bookingID'], BOOKING2['roomname'], BOOKING2['username'], BOOKING2['bookingTime'], {})
         self.assertIsNone(booking)
 
 if __name__ == '__main__':

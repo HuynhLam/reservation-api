@@ -239,6 +239,7 @@ class Connection(object):
 
             where:
 
+            * ``bookingID``: ID number of the booking.
             * ``roomname``: Name of room to be booked.
             * ``username``: User name of the user create the booking.
             * ``bookingTime``: Date and time of booking.
@@ -251,6 +252,7 @@ class Connection(object):
 
         '''
         return {
+            "bookingID": row["bookingID"],
             "roomname": row["roomName"],
             "username": str(row["username"]),
             "bookingTime": str(row["bookingTime"]),
@@ -456,6 +458,7 @@ class Connection(object):
         :return: A list of bookings. Each booking is a dictionary containing
             the following keys:
 
+            * ``bookingID``: ID number of the booking.
             * ``roomname``: Name of room to be booked.
             * ``username``: user name of user who create the booking.
             * ``bookingTime``: Date and time of the booking.
@@ -537,13 +540,15 @@ class Connection(object):
             pvalue = (roomname, username, bookingTime, booking_dict['firstname'], booking_dict['lastname'],
                       booking_dict['email'], booking_dict['contactnumber'])
             cur.execute(query2, pvalue)
+            # Get last row id (AUTO_INCREMENT)
+            booking_id = cur.lastrowid
             self.con.commit()
-            # We do not do any comprobation and return the roomname username bookingTime
-            return roomname, username, bookingTime
+            # We do not do any comprobation and return the booking_id, roomname, username, bookingTime
+            return booking_id, roomname, username, bookingTime
         else:
             return None
 
-    def modify_booking(self, roomname, username, bookingTime, booking_dict):
+    def modify_booking(self, booking_id, roomname, username, bookingTime, booking_dict):
         '''
         Modify the information of a booking.
 
@@ -558,13 +563,15 @@ class Connection(object):
         '''
         # Create the SQL Statements
         # SQL Statement for extracting the bookingID given a bookingID
-        query1 = 'SELECT bookingID from Bookings WHERE roomName = ? AND username = ? AND bookingTime = ?'
+        query1 = 'SELECT bookingID from Bookings WHERE bookingID = ? AND roomName = ? AND username = ? AND bookingTime = ?'
         # SQL Statement to create the row in Bookings table
         query2 = 'UPDATE Bookings SET roomName=?, username=?, bookingTime=?, firstName=?,\
                                     lastName=?, email=?, contactNumber=?\
                                     WHERE roomName = ? AND username = ? AND bookingTime = ?'
 
         # Check dict
+        if not 'bookingID' in booking_dict:
+            return None
         if not 'roomname' in booking_dict:
             return None
         if not 'username' in booking_dict:
@@ -594,7 +601,7 @@ class Connection(object):
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         # Execute the statement to extract the roomname, username, bookingTime associated to a bookingID
-        pvalue = (roomname, username, bookingTime)
+        pvalue = (booking_id, roomname, username, bookingTime)
         cur.execute(query1, pvalue)
         # Returns row if already exists
         row = cur.fetchone()
@@ -607,24 +614,24 @@ class Connection(object):
             pvalue = (_roomname, _username, _bookingtime, _firstname, _lastname, _email, _contactnumber, roomname, username, bookingTime)
             cur.execute(query2, pvalue)
             self.con.commit()
-            # We do not do any comprobation and return the roomname username bookingTime
-            return _roomname, _username, _bookingtime
+            # We do not do any comprobation and return the booking_id, roomname, username, bookingTime
+            return booking_id, _roomname, _username, _bookingtime
 
-    def delete_booking(self, roomName, username, bookingTime):
+    def delete_booking(self, booking_id, roomName=None, username=None, bookingTime=None):
         '''
         Delete the booking with id given as parameter.
         :return: True if the booking has been deleted, False otherwise
 
         '''
         #Create the SQL Statements
-        query = "DELETE FROM Bookings WHERE roomName = ? AND username = ? AND bookingTime = ?"
+        query = "DELETE FROM Bookings WHERE bookingID = ? AND roomName = ? AND username = ? AND bookingTime = ?"
         # Activate foreign key support
         self.set_foreign_keys_support()
         #Cursor and row initialization
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         #Execute the statement to delete
-        pvalue = (roomName, username, bookingTime)
+        pvalue = (booking_id, roomName, username, bookingTime)
         cur.execute(query, pvalue)
         self.con.commit()
         #Check that it has been deleted
