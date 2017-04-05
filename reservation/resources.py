@@ -466,8 +466,24 @@ class HistoryBookings(Resource):
 
 #TODO 4 change them base on our thing
 # Define the routes
-api.add_resource(User, "/users/<username>",
+api.add_resource(User, "/tellus/api/users/<username>/",
                  endpoint="user")
+api.add_resource(RoomsList, "/tellus/api/rooms/",
+                 endpoint="rooms_list")
+api.add_resource(Room, "/tellus/api/rooms/<name>/",
+                 endpoint="room")
+api.add_resource(Bookings, "/tellus/api/bookings/",
+                 endpoint="bookings")
+api.add_resource(BookingsOfRoom, "/tellus/api/rooms/<name>/bookings",
+                 endpoint="bookings_of_room")
+api.add_resource(BookingsOfUser, "/tellus/api/users/<username>/bookings",
+                 endpoint="bookings_of_user")
+api.add_resource(BookingOfRoom, "/tellus/api/rooms/<name>/bookings/<booking_id>/",
+                 endpoint="booking_of_room")
+api.add_resource(BookingOfUser, "/tellus/api/users/<username>/bookings/<booking_id>/",
+                 endpoint="booking_of_user")
+api.add_resource(HistoryBookings, "/tellus/api/bookings/history/",
+                 endpoint="history_bookings")
 ## end of todo4
 
 
