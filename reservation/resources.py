@@ -127,8 +127,180 @@ class ReservationObject(MasonObject):
         super(ReservationObject, self).__init__(**kwargs)
         self["@controls"] = {}
 
-        # TODO 3 implement mason response functions
-        ## end of todo3
+    # TODO 3 implement mason response functions
+    def add_control_add_user(self):
+        """
+        This adds the add-user link to an object. Intended for the document object.
+        """
+
+        self["@controls"]["tellus:add-user"] = {
+            "title": "Add User",
+            "href": "/tellus/api/users/",
+            "encoding": "json",
+            "method": "POST",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "title": "Username",
+                        "description": "Username of user",
+                        "type": "string"
+                    },
+                    "isAdmin": {
+                        "title": "Admin",
+                        "description": "Account type to identify User or Admin",
+                        "type": "boolean"
+                    },
+                    "email": {
+                        "title": "E-mail",
+                        "description": "E-mail of user",
+                        "type": "string"
+                    },
+                    "familyName": {
+                        "title": "Family Name",
+                        "description": "Family name of the user",
+                        "type": "string"
+                    },
+                    "givenName": {
+                        "title": "Given Name",
+                        "description": "Given name of the user",
+                        "type": "string"
+                    },
+                    "telephone": {
+                        "title": "Phone Number",
+                        "description": "Phone Number of the user",
+                        "type": "string"
+                    }
+                },
+                "required": ["username"]
+            }
+        }
+
+    def add_control_delete_user(self, username):
+        """
+        This adds the delete link for user to an object. Intended for the document object.
+        """
+
+        self["@controls"]["tellus:delete"] = {
+            "href": api.url_for(User, username=username),
+            "title": "Delete this user",
+            "method": "DELETE"
+        }
+
+    def add_control_delete_booking_of_room(self, name, booking_id):
+        """
+        This adds the delete link for booking to an object. Intended for the document object.
+        """
+
+        self["@controls"]["tellus:delete"] = {
+            "href": api.url_for(BookingOfRoom, name=name, booking_id=booking_id),
+            "title": "Delete booking"
+        }
+
+    def add_control_delete_booking_of_user(self, username, booking_id):
+        """
+        This adds the delete link for booking to an object. Intended for the document object.
+        """
+
+        self["@controls"]["tellus:delete"] = {
+            "href": api.url_for(BookingOfUser, username=username, booking_id=booking_id),
+            "title": "Delete booking"
+        }
+
+    def add_control_bookings_all(self):
+        """
+        This adds the bookings-all link to an object. Intended for the document object.
+        """
+
+        self["@controls"]["tellus:bookings-all"] = {
+            "href": api.url_for(Bookings),
+            "title": "List all bookings"
+        }
+
+    def add_control_bookings_room(self, name):
+        """
+        This adds the bookings-room link to an object. Intended for the document object.
+        """
+
+        self["@controls"]["tellus:bookings-room"] = {
+            "href": api.url_for(Bookings, name=name),
+            "title": "List all bookings of Room"
+        }
+
+    def add_control_bookings_user(self, username):
+        """
+        This adds the bookings-user link to an object. Intended for the document object.
+        """
+
+        self["@controls"]["tellus:bookings-user"] = {
+            "href": api.url_for(BookingsOfUser, username=username),
+            "title": "List all bookings of User"
+        }
+
+    def add_control_add_booking(self, name):
+        """
+        This adds the add-booking link to an object. Intended for the document object.
+        """
+
+        self["@controls"]["tellus:add-booking"] = {
+            "title": "Create booking",
+            "href": api.url_for(BookingsOfRoom, name=name),
+            "encoding": "json",
+            "method": "POST",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "title": "User Name",
+                        "description": "Username of the booking's owner",
+                        "type": "string"
+                    },
+                    "bookingTime": {
+                        "title": "Booking Time",
+                        "description": "Date and time of the booking",
+                        "type": "string"
+                    },
+                    "email": {
+                        "title": "Email",
+                        "description": "Email of the booking's owner",
+                        "type": "string"
+                    },
+                    "familyName": {
+                        "title": "Family Name",
+                        "description": "Family Name of the booking's owner",
+                        "type": "string"
+                    },
+                    "givenName": {
+                        "title": "Given Name",
+                        "description": "Given Name of the booking's owner",
+                        "type": "string"
+                    },
+                    "telephone": {
+                        "title": "Telephone",
+                        "description": "Telephone number of the booking's owner",
+                        "type": "string"
+                    },
+                    "name": {
+                        "title": "Room name",
+                        "description": "Room name which the booking take place",
+                        "type": "string"
+                    },
+                },
+                "required": ["username", "bookingTime", "name"]
+            }
+        }
+
+    def add_control_history_bookings(self):
+        """
+        This adds the history-bookings link to an object. Intended for the document object.
+        """
+
+        self["@controls"]["tellus:history-bookings"] = {
+            "href": api.url_for(HistoryBookings),
+            "title": "History Bookings"
+        }
+
+    ## end of todo3
 
 
 ##### This ERROR HANDLERS functions are borrowed from course exercises. #####
