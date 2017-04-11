@@ -1,7 +1,8 @@
 import json
+from time import strftime, gmtime
 
 from flask import Flask, request, Response, g, _request_ctx_stack, redirect, send_from_directory
-from flask.ext.restful import Resource, Api, abort
+from flask_restful import Resource, Api, abort
 from werkzeug.exceptions import HTTPException, NotFound
 
 import database
@@ -11,8 +12,9 @@ MASON = "application/vnd.mason+json"
 JSON = "application/json"
 
 # TODO 1 put profile links here, change the variable names
+TELLUS_BOOKING_PROFILE = "/profiles/booking_profile/"
 FORUM_USER_PROFILE = "/profiles/user-profile/"
-FORUM_MESSAGE_PROFILE = "/profiles/message-profile/"
+#FORUM_MESSAGE_PROFILE = "/profiles/message-profile/"
 ERROR_PROFILE = "/profiles/error-profile"
 
 # Fill these in
@@ -23,7 +25,7 @@ APIARY_RELS_URL = "STUDENT_APIARY_PROJECT/reference/link-relations/"
 # TODO 2 create schemas like in the exercises in json format
 USER_SCHEMA_URL = "/forum/schema/user/"
 PRIVATE_PROFILE_SCHEMA_URL = "/forum/schema/private-profile/"
-LINK_RELATIONS_URL = "/forum/link-relations/"
+LINK_RELATIONS_URL = "/tellus/link-relations/"
 ## end of todo2
 
 # Define the application and the api
@@ -237,6 +239,55 @@ class ReservationObject(MasonObject):
             "title": "List all bookings of User"
         }
 
+    def add_control_edit_booking(self):
+        self["@controls"]["edit"] = {
+                    "title": "Modify Booking",
+                    "href": "/tellus/api/bookings/",
+                    "encoding": "json",
+                    "method": "PUT",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "username": {
+                                "title": "User Name",
+                                "description": "Username of the booking's owner",
+                                "type": "string"
+                            },
+                            "bookingTime": {
+                                "title": "Booking Time",
+                                "description": "Date and time of the booking",
+                                "type": "string"
+                            },
+                            "email": {
+                                "title": "Email",
+                                "description": "Email of the booking's owner",
+                                "type": "string"
+                            },
+                            "familyName": {
+                                "title": "Family Name",
+                                "description": "Family Name of the booking's owner",
+                                "type": "string"
+                            },
+                            "givenName": {
+                                "title": "Given Name",
+                                "description": "Given Name of the booking's owner",
+                                "type": "string"
+                            },
+                            "telephone": {
+                                "title": "Telephone",
+                                "description": "Telephone number of the booking's owner",
+                                "type": "string"
+                            },
+                            "name": {
+                                "title": "Room name",
+                                "description": "Room name which the booking take place",
+                                "type": "string"
+                            },
+                        },
+                        "required": ["username", "bookingTime", "name"]
+                    }
+        }
+
     def add_control_add_booking(self, name):
         """
         This adds the add-booking link to an object. Intended for the document object.
@@ -400,7 +451,7 @@ class Room(Resource):
     """
     Resource Room implementation
     """
-
+#TODO
     def put(self, name):
         pass
 
@@ -418,10 +469,65 @@ class BookingsOfRoom(Resource):
     """
     Resource Bookings of Room implementation
     """
-
+#TODO
     def get(self, name):
-        pass
+        """
+        Get all list of bookings for specified room.
 
+        INPUT parameters:
+          :param str name: the name of the room.
+
+        RESPONSE ENTITY BODY:
+        * Media type: Mason
+            https://github.com/JornWildt/Mason
+        * Profile: booking-profile
+            http://docs.tellusreservationapi.apiary.io/#reference
+            /profiles/booking-profile
+
+        NOTE:
+         * The attribute contactnumber is obtained from the column bookings.contactnumber
+         * The attribute email is obtained from the column bookings.email
+         * The attribute firstname is obtained from the column bookings.firstname
+         * The attribute lastname is obtained from the column bookings.lastname
+        """
+
+        # Check the room exists
+        room = filter(lambda x: "roomname" in x and x["roomname"] == name, g.con.get_rooms())
+        if not room:
+            return create_error_response(404, "Room does not exist",
+                                  "There is no a room with name %s" % name)
+        # Extract bookings from database
+        bookings_db = g.con.get_bookings(name)
+
+        # Create envelope for response
+        envelope = ReservationObject()
+        envelope.add_namespace("tellus", LINK_RELATIONS_URL)
+
+        envelope.add_control("self", href=api.url_for(BookingsOfRoom, name=name))
+        envelope.add_control_bookings_all()
+        envelope.add_control_add_booking(name=name)
+
+        # Add booking items
+        items = envelope["items"] = []
+
+        for booking in bookings_db:
+            item = ReservationObject(name=booking["roomname"],
+                                     username=booking["username"],
+                                     bookingTime=booking["bookingTime"])
+            item.add_control("profile", href=TELLUS_BOOKING_PROFILE)
+            item.add_control("collection",
+                             href=api.url_for(BookingsOfRoom, name=name))
+            item.add_control_delete_booking_of_room(name=booking["roomname"],
+                                                    booking_id=booking["bookingID"])
+            item.add_control_edit_booking()
+            items.append(item)
+
+            # RENDER
+        return Response(json.dumps(envelope), 200, mimetype=MASON + ";" + TELLUS_BOOKING_PROFILE)
+
+
+
+#TODO
     def post(self, name):
         pass
 
@@ -430,9 +536,60 @@ class BookingsOfUser(Resource):
     """
     Resource Bookings of User implementation
     """
-
+#TODO
     def get(self, username):
-        pass
+        """
+        Get all list of bookings for specified user.
+
+        INPUT parameters:
+          :param str username: the username of the user.
+
+        RESPONSE ENTITY BODY:
+        * Media type: Mason
+            https://github.com/JornWildt/Mason
+        * Profile: booking-profile
+            http://docs.tellusreservationapi.apiary.io/#reference
+            /profiles/booking-profile
+
+        NOTE:
+         * The attribute contactnumber is obtained from the column bookings.contactnumber
+         * The attribute email is obtained from the column bookings.email
+         * The attribute firstname is obtained from the column bookings.firstname
+         * The attribute lastname is obtained from the column bookings.lastname
+        """
+        #TODO implement get user
+        # # Check the room exists
+        # room = filter(lambda x: "roomname" in x and x["roomname"] == name, g.con.get_rooms())
+        # if not room:
+        #     return create_error_response(404, "Room does not exist",
+        #                                  "There is no a room with name %s" % name)
+
+        # Extract bookings from database
+        bookings_db = filter(lambda x: "username" in x and x["username"] == username, g.con.get_bookings())
+
+        # Create envelope for response
+        envelope = ReservationObject()
+        envelope.add_namespace("tellus", LINK_RELATIONS_URL)
+
+        envelope.add_control("self", href=api.url_for(BookingsOfUser, username=username))
+        envelope.add_control_bookings_all()
+
+        # Add booking items
+        items = envelope["items"] = []
+
+        for booking in bookings_db:
+            item = ReservationObject(name=booking["roomname"],
+                                     username=booking["username"],
+                                     bookingTime=booking["bookingTime"])
+            item.add_control("profile", href=TELLUS_BOOKING_PROFILE)
+            item.add_control("collection",
+                             href=api.url_for(BookingsOfUser, username=username))
+            item.add_control_delete_booking_of_user(username=booking["username"],
+                                                    booking_id=booking["bookingID"])
+            items.append(item)
+
+        # RENDER
+        return Response(json.dumps(envelope), 200, mimetype=MASON + ";" + TELLUS_BOOKING_PROFILE)
 
 
 class BookingOfRoom(Resource):
@@ -451,7 +608,7 @@ class BookingOfUser(Resource):
     """
     Resource Booking of User implementation
     """
-
+#TODO
     def delete(self, username, booking_id):
         pass
 
@@ -460,9 +617,53 @@ class HistoryBookings(Resource):
     """
     Resource History Bookings implementation
     """
-
+#TODO
     def get(self):
-        pass
+        """
+        Get all list of past bookings.
+
+        INPUT parameters:
+          The query parameters are:
+          * limit: The maximum number of bookings to return.
+
+        RESPONSE ENTITY BODY:
+        * Media type: Mason
+            https://github.com/JornWildt/Mason
+        * Profile: booking-profile
+            http://docs.tellusreservationapi.apiary.io/#reference
+            /profiles/booking-profile
+        """
+        # Extract query parameters
+        parameters = request.args
+        limit = int(parameters.get('limit', 30))
+
+        # Extract bookings from database
+        bookings_db = filter(
+            lambda x: "bookingTime" in x
+                      and x["bookingTime"] < strftime("%Y-%m-%d %H:%M", gmtime()),
+            g.con.get_bookings())
+        bookings_db = bookings_db[:limit]
+
+        # Create envelope for response
+        envelope = ReservationObject()
+        envelope.add_namespace("tellus", LINK_RELATIONS_URL)
+
+        envelope.add_control("self", href=api.url_for(HistoryBookings))
+
+        # Add booking items
+        items = envelope["items"] = []
+
+        for booking in bookings_db:
+            item = ReservationObject(name=booking["roomname"],
+                                     username=booking["username"],
+                                     bookingTime=booking["bookingTime"])
+            item.add_control("profile", href=TELLUS_BOOKING_PROFILE)
+            item.add_control_delete_booking_of_room(name=booking["roomname"],
+                                                    booking_id=booking["bookingID"])
+            items.append(item)
+
+        # RENDER
+        return Response(json.dumps(envelope), 200, mimetype=MASON + ";" + TELLUS_BOOKING_PROFILE)
 
 #TODO 4 change them base on our thing
 # Define the routes
@@ -493,13 +694,13 @@ def redirect_to_profile(profile_name):
     return redirect(APIARY_PROFILES_URL + profile_name)
 
 
-@app.route("/forum/link-relations/<rel_name>/")
+@app.route("/tellus/link-relations/<rel_name>/")
 def redirect_to_rels(rel_name):
     return redirect(APIARY_RELS_URL + rel_name)
 
 
 # Send our schema file(s)
-@app.route("/forum/schema/<schema_name>/")
+@app.route("/tellus/schema/<schema_name>/")
 def send_json_schema(schema_name):
     return send_from_directory(app.static_folder, "schema/{}.json".format(schema_name))
 
