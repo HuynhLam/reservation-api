@@ -384,7 +384,24 @@ class User(Resource):
         pass
 
     def delete(self, username):
-        pass
+    """
+        Deletes 1 User from the Tellus API.
+
+        INPUT PARAMETERS:
+        :param str username: username of the User that we want to delete
+
+        RESPONSE STATUS CODE
+         * Returns 204 if the User was successfully deleted
+         * Returns 404 if the username did not exist.
+        """
+
+        #PERFORM DELETE OPERATIONS
+        if g.con.delete_user(username):
+            return "", 204
+        else:
+            #Send 404 error message
+            return create_error_response(404, "Unknown User",
+                                         "There is no User with username %s" % username)
 
 
 class RoomsList(Resource):
@@ -444,7 +461,25 @@ class BookingOfRoom(Resource):
         pass
 
     def delete(self, name, booking_id):
-        pass
+        """
+        Deletes 1 Booking of a specific Room from the Tellus API.
+
+        INPUT PARAMETERS:
+        :param str name: name of the Room, which contain the Booking we want to remove.
+        :param str booking_id: Booking ID of the Booking we want to remove.
+
+        RESPONSE STATUS CODE
+         * Returns 204 if the Booking was successfully deleted
+         * Returns 404 if the Booking did not exist.
+        """
+
+        #PERFORM DELETE OPERATIONS
+        if g.con.delete_booking(name, booking_id):
+            return "", 204
+        else:
+            #Send 404 error message
+            return create_error_response(404, "Unknown Booking",
+                                         "There is no Booking with Booking ID: %(bookingID)s in Room: %(roomName)s" % {"bookingID":"booking_id", "roomName":"name"})
 
 
 class BookingOfUser(Resource):
