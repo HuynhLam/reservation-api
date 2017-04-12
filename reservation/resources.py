@@ -10,21 +10,23 @@ import database
 MASON = "application/vnd.mason+json"
 JSON = "application/json"
 
-# TODO 1 put profile links here, change the variable names
-FORUM_USER_PROFILE = "/profiles/user-profile/"
-FORUM_MESSAGE_PROFILE = "/profiles/message-profile/"
-ERROR_PROFILE = "/profiles/error-profile"
+# TODO 1 put profile links here, change the variable namess
+TELLUS_USER_PROFILE = "/profiles/user-profile/"
+TELLUS_ROOM_PROFILE = "/profiles/room-profile/"
+TELLUS_BOOKING_PROFILE = "/profiles/booking_profile/"
+ERROR_PROFILE = "/profiles/error-profile/"
 
 # Fill these in
-APIARY_PROFILES_URL = "STUDENT_APIARY_PROJECT/reference/profiles/"
-APIARY_RELS_URL = "STUDENT_APIARY_PROJECT/reference/link-relations/"
-## end of todo1
+APIARY_PROFILES_URL = "http://docs.tellusreservationapi.apiary.io/#reference/profiles"
+APIARY_RELS_URL = "http://docs.tellusreservationapi.apiary.io/#reference/link-relations"
+## end of TODO 1
 
 # TODO 2 create schemas like in the exercises in json format
 USER_SCHEMA_URL = "/forum/schema/user/"
 PRIVATE_PROFILE_SCHEMA_URL = "/forum/schema/private-profile/"
+
 LINK_RELATIONS_URL = "/forum/link-relations/"
-## end of todo2
+## end of TODO 2
 
 # Define the application and the api
 # Set the debug is True as default but it must be set as False after testing.
@@ -207,6 +209,41 @@ class ReservationObject(MasonObject):
             "title": "Delete booking"
         }
 
+    def add_control_edit_room(self):
+        """
+        Adds the edit control to a room object. For the schema we need
+        the name of the room that we want to change.
+
+        : param str roomName: name of the room.
+        """
+        self["@controls"]["edit"] = {
+                    "title": "Modify Room",
+                    "href": "/tellus/api/rooms/",
+                    "encoding": "json",
+                    "method": "PUT",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "roomname": {
+                                "title": "Room Name",
+                                "description": "Room name of the room",
+                                "type": "string"
+                            },
+                            "picture": {
+                                "title": "Picture",
+                                "description": "Picture of the room",
+                                "type": "string"
+                            },
+                            "email": {
+                                "title": "resources",
+                                "description": "Equipment inside the room",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["roomname"]
+                    }
+        }
+
     def add_control_bookings_all(self):
         """
         This adds the bookings-all link to an object. Intended for the document object.
@@ -384,7 +421,24 @@ class User(Resource):
         pass
 
     def delete(self, username):
-        pass
+    """
+        Deletes 1 User from the Tellus API.
+
+        INPUT PARAMETERS:
+        :param str username: username of the User that we want to delete
+
+        RESPONSE STATUS CODE
+         * Returns 204 if the User was successfully deleted
+         * Returns 404 if the username did not exist.
+        """
+
+        #PERFORM DELETE OPERATIONS
+        if g.con.delete_user(username):
+            return "", 204
+        else:
+            #Send 404 error message
+            return create_error_response(404, "Unknown User",
+                                         "There is no User with username %s" % username)
 
 
 class RoomsList(Resource):
@@ -393,7 +447,48 @@ class RoomsList(Resource):
     """
 
     def get(self):
-        pass
+        """
+        Get list of all Rooms in Tellus API.
+        
+        It returns always status code 200.
+
+        RESPONSE ENTITY BODY:
+        * Media type: Mason
+            https://github.com/JornWildt/Mason
+        * Profile: room-profile
+            http://docs.tellusreservationapi.apiary.io/#reference
+            /profiles/room-profile
+
+        Semantic descriptions used in items: roomname
+        
+        NOTE:
+         * The attribute picture is obtained from the column rooms.picture
+         * The attribute resources is obtained from the column rooms.resources
+        """
+
+        # Extract bookings from database
+        rooms_db = g.con.get_rooms()
+
+        # Create envelope for response
+        envelope = ReservationObject()
+        
+        envelope.add_namespace("tellus", LINK_RELATIONS_URL)
+        envelope.add_control("self", href=api.url_for(RoomsList))
+
+        # Add room items
+        items = envelope["items"] = []
+
+        for room in rooms_db:
+            item = ReservationObject(name=booking["roomname"])
+                                     
+            item.add_control("profile", href=TELLUS_ROOM_PROFILE)
+            item.add_control("collection", href=api.url_for(RoomsList))
+            item.add_control_edit_room()
+            
+            items.append(item)
+
+            # RENDER
+        return Response(json.dumps(envelope), 200, mimetype=MASON + ";" + TELLUS_ROOM_PROFILE)
 
 
 class Room(Resource):
@@ -444,7 +539,25 @@ class BookingOfRoom(Resource):
         pass
 
     def delete(self, name, booking_id):
-        pass
+        """
+        Deletes 1 Booking of a specific Room from the Tellus API.
+
+        INPUT PARAMETERS:
+        :param str name: name of the Room, which contain the Booking we want to remove.
+        :param str booking_id: Booking ID of the Booking we want to remove.
+
+        RESPONSE STATUS CODE
+         * Returns 204 if the Booking was successfully deleted
+         * Returns 404 if the Booking did not exist.
+        """
+
+        #PERFORM DELETE OPERATIONS
+        if g.con.delete_booking(name, booking_id):
+            return "", 204
+        else:
+            #Send 404 error message
+            return create_error_response(404, "Unknown Booking",
+                                         "There is no Booking with Booking ID: %(bookingID)s in Room: %(roomName)s" % {"bookingID":"booking_id", "roomName":"name"})
 
 
 class BookingOfUser(Resource):
