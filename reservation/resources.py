@@ -10,21 +10,23 @@ import database
 MASON = "application/vnd.mason+json"
 JSON = "application/json"
 
-# TODO 1 put profile links here, change the variable names
-FORUM_USER_PROFILE = "/profiles/user-profile/"
-FORUM_MESSAGE_PROFILE = "/profiles/message-profile/"
-ERROR_PROFILE = "/profiles/error-profile"
+# TODO 1 put profile links here, change the variable namess
+TELLUS_USER_PROFILE = "/profiles/user-profile/"
+TELLUS_ROOM_PROFILE = "/profiles/room-profile/"
+TELLUS_BOOKING_PROFILE = "/profiles/booking_profile/"
+ERROR_PROFILE = "/profiles/error-profile/"
 
 # Fill these in
-APIARY_PROFILES_URL = "STUDENT_APIARY_PROJECT/reference/profiles/"
-APIARY_RELS_URL = "STUDENT_APIARY_PROJECT/reference/link-relations/"
-## end of todo1
+APIARY_PROFILES_URL = "http://docs.tellusreservationapi.apiary.io/#reference/profiles"
+APIARY_RELS_URL = "http://docs.tellusreservationapi.apiary.io/#reference/link-relations"
+## end of TODO 1
 
 # TODO 2 create schemas like in the exercises in json format
 USER_SCHEMA_URL = "/forum/schema/user/"
 PRIVATE_PROFILE_SCHEMA_URL = "/forum/schema/private-profile/"
+
 LINK_RELATIONS_URL = "/forum/link-relations/"
-## end of todo2
+## end of TODO 2
 
 # Define the application and the api
 # Set the debug is True as default but it must be set as False after testing.
@@ -410,7 +412,58 @@ class RoomsList(Resource):
     """
 
     def get(self):
-        pass
+        """
+        Get list of all Rooms in Tellus API.
+        
+        It returns always status code 200.
+
+        RESPONSE ENTITY BODY:
+        * Media type: Mason
+            https://github.com/JornWildt/Mason
+        * Profile: booking-profile
+            http://docs.tellusreservationapi.apiary.io/#reference
+            /profiles/booking-profile
+
+        NOTE:
+         * The attribute contactnumber is obtained from the column bookings.contactnumber
+         * The attribute email is obtained from the column bookings.email
+         * The attribute firstname is obtained from the column bookings.firstname
+         * The attribute lastname is obtained from the column bookings.lastname
+        """
+
+        # Check the room exists
+        room = filter(lambda x: "roomname" in x and x["roomname"] == name, g.con.get_rooms())
+        if not room:
+            return create_error_response(404, "Room does not exist",
+                                  "There is no a room with name %s" % name)
+        # Extract bookings from database
+        bookings_db = g.con.get_bookings(name)
+
+        # Create envelope for response
+        envelope = ReservationObject()
+        envelope.add_namespace("tellus", LINK_RELATIONS_URL)
+
+        envelope.add_control("self", href=api.url_for(BookingsOfRoom, name=name))
+        envelope.add_control_bookings_all()
+        envelope.add_control_add_booking(name=name)
+
+        # Add booking items
+        items = envelope["items"] = []
+
+        for booking in bookings_db:
+            item = ReservationObject(name=booking["roomname"],
+                                     username=booking["username"],
+                                     bookingTime=booking["bookingTime"])
+            item.add_control("profile", href=TELLUS_BOOKING_PROFILE)
+            item.add_control("collection",
+                             href=api.url_for(BookingsOfRoom, name=name))
+            item.add_control_delete_booking_of_room(name=booking["roomname"],
+                                                    booking_id=booking["bookingID"])
+            item.add_control_edit_booking()
+            items.append(item)
+
+            # RENDER
+        return Response(json.dumps(envelope), 200, mimetype=MASON + ";" + TELLUS_BOOKING_PROFILE)
 
 
 class Room(Resource):
