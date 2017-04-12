@@ -209,6 +209,41 @@ class ReservationObject(MasonObject):
             "title": "Delete booking"
         }
 
+    def add_control_edit_room(self):
+        """
+        Adds the edit control to a room object. For the schema we need
+        the name of the room that we want to change.
+
+        : param str roomName: name of the room.
+        """
+        self["@controls"]["edit"] = {
+                    "title": "Modify Room",
+                    "href": "/tellus/api/rooms/",
+                    "encoding": "json",
+                    "method": "PUT",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "roomname": {
+                                "title": "Room Name",
+                                "description": "Room name of the room",
+                                "type": "string"
+                            },
+                            "picture": {
+                                "title": "Picture",
+                                "description": "Picture of the room",
+                                "type": "string"
+                            },
+                            "email": {
+                                "title": "resources",
+                                "description": "Equipment inside the room",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["roomname"]
+                    }
+        }
+
     def add_control_bookings_all(self):
         """
         This adds the bookings-all link to an object. Intended for the document object.
@@ -420,50 +455,40 @@ class RoomsList(Resource):
         RESPONSE ENTITY BODY:
         * Media type: Mason
             https://github.com/JornWildt/Mason
-        * Profile: booking-profile
+        * Profile: room-profile
             http://docs.tellusreservationapi.apiary.io/#reference
-            /profiles/booking-profile
+            /profiles/room-profile
 
+        Semantic descriptions used in items: roomname
+        
         NOTE:
-         * The attribute contactnumber is obtained from the column bookings.contactnumber
-         * The attribute email is obtained from the column bookings.email
-         * The attribute firstname is obtained from the column bookings.firstname
-         * The attribute lastname is obtained from the column bookings.lastname
+         * The attribute picture is obtained from the column rooms.picture
+         * The attribute resources is obtained from the column rooms.resources
         """
 
-        # Check the room exists
-        room = filter(lambda x: "roomname" in x and x["roomname"] == name, g.con.get_rooms())
-        if not room:
-            return create_error_response(404, "Room does not exist",
-                                  "There is no a room with name %s" % name)
         # Extract bookings from database
-        bookings_db = g.con.get_bookings(name)
+        rooms_db = g.con.get_rooms()
 
         # Create envelope for response
         envelope = ReservationObject()
+        
         envelope.add_namespace("tellus", LINK_RELATIONS_URL)
+        envelope.add_control("self", href=api.url_for(RoomsList))
 
-        envelope.add_control("self", href=api.url_for(BookingsOfRoom, name=name))
-        envelope.add_control_bookings_all()
-        envelope.add_control_add_booking(name=name)
-
-        # Add booking items
+        # Add room items
         items = envelope["items"] = []
 
-        for booking in bookings_db:
-            item = ReservationObject(name=booking["roomname"],
-                                     username=booking["username"],
-                                     bookingTime=booking["bookingTime"])
-            item.add_control("profile", href=TELLUS_BOOKING_PROFILE)
-            item.add_control("collection",
-                             href=api.url_for(BookingsOfRoom, name=name))
-            item.add_control_delete_booking_of_room(name=booking["roomname"],
-                                                    booking_id=booking["bookingID"])
-            item.add_control_edit_booking()
+        for room in rooms_db:
+            item = ReservationObject(name=booking["roomname"])
+                                     
+            item.add_control("profile", href=TELLUS_ROOM_PROFILE)
+            item.add_control("collection", href=api.url_for(RoomsList))
+            item.add_control_edit_room()
+            
             items.append(item)
 
             # RENDER
-        return Response(json.dumps(envelope), 200, mimetype=MASON + ";" + TELLUS_BOOKING_PROFILE)
+        return Response(json.dumps(envelope), 200, mimetype=MASON + ";" + TELLUS_ROOM_PROFILE)
 
 
 class Room(Resource):
