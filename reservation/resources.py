@@ -466,7 +466,7 @@ class RoomsList(Resource):
          * The attribute resources is obtained from the column rooms.resources
         """
 
-        # Extract bookings from database
+        # Extract rooms from database
         rooms_db = g.con.get_rooms()
 
         # Create envelope for response
@@ -479,10 +479,11 @@ class RoomsList(Resource):
         items = envelope["items"] = []
 
         for room in rooms_db:
-            item = ReservationObject(name=booking["roomname"])
+            item = ReservationObject(name=room["roomname"])
                                      
             item.add_control("profile", href=TELLUS_ROOM_PROFILE)
             item.add_control("collection", href=api.url_for(RoomsList))
+            
             item.add_control_edit_room()
             
             items.append(item)
@@ -506,7 +507,55 @@ class Bookings(Resource):
     """
 
     def get(self):
-        pass
+        """
+        Get list of all Bookings in Tellus API.
+        
+        It returns always status code 200.
+
+        RESPONSE ENTITY BODY:
+        * Media type: Mason
+            https://github.com/JornWildt/Mason
+        * Profile: booking-profile
+            http://docs.tellusreservationapi.apiary.io/#reference
+            /profiles/booking-profile
+
+        Semantic descriptions used in items: roomname, username, bookingTime
+        
+        NOTE:
+         * The attribute contactnumber is obtained from the column bookings.contactnumber
+         * The attribute email is obtained from the column bookings.email
+         * The attribute firstname is obtained from the column bookings.firstname
+         * The attribute lastname is obtained from the column bookings.lastname
+        """
+
+        # Extract bookings from database
+        bookings_db = g.con.get_bookings()
+
+        # Create envelope for response
+        envelope = ReservationObject()
+        
+        envelope.add_namespace("tellus", LINK_RELATIONS_URL)
+        envelope.add_control("self", href=api.url_for(Bookings))
+        envelope.add_control_history_bookings()
+
+        # Add booking items
+        items = envelope["items"] = []
+
+        for booking in bookings_db:
+            item = ReservationObject(name=booking["roomname"],
+                                     username=booking["username"],
+                                     bookingTime=booking["bookingTime"])
+                                     
+            item.add_control("profile", href=TELLUS_BOOKING_PROFILE)
+            item.add_control("collection", href=api.url_for(Bookings))
+            
+            item.add_control_bookings_room(name=booking["roomname"])
+            item.add_control_bookings_user(username=booking["username"])
+            
+            items.append(item)
+
+            # RENDER
+        return Response(json.dumps(envelope), 200, mimetype=MASON + ";" + TELLUS_BOOKING_PROFILE)
 
 
 class BookingsOfRoom(Resource):
