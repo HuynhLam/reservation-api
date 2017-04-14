@@ -584,8 +584,75 @@ class BookingOfRoom(Resource):
     Resource Booking of Room implementation
     """
 
-    def put(self, name, booking_id):
-        pass
+    def put(self, booking_id, name):
+        """
+        Modifies bookingTime of one booking by a specific User of a specific Room.
+
+        INPUT PARAMETERS:
+        :param str booking_id: The booking ID of the booking we want to modify
+        :param str name: The name of the room contant the booking we want to modify
+
+        REQUEST ENTITY BODY:
+        * Media type: JSON
+        * Profile: TELLUS_BOOKING_PROFILE
+          /profiles/booking_profile/
+
+        OUTPUT:
+         * Returns 204 if the booking was successfully modified
+         * Returns 400 if the input format for modify is wrong or empty.
+         * Returns 404 if there is no booking with booking_id in that room name
+         * Returns 415 if the input is not JSON (unsupport media type)
+         * Returns 500 if failed to modify the booking in database
+
+        NOTE:
+         * The attribute contactnumber is obtained from the column bookings.contactnumber
+         * The attribute email is obtained from the column bookings.email
+         * The attribute firstname is obtained from the column bookings.firstname
+         * The attribute lastname is obtained from the column bookings.lastname
+
+        """
+
+        #CHECK THAT BOOKING EXISTS
+        room_bookings = g.con.get_bookings(name)
+        booking_non_exist = True
+        for booking in room_bookings:
+            if(booking_id == (int)booking["bookingID"]):
+                booking_non_exist = False
+                break
+
+        # if there is at least one booking with booking_id in that room name, continue
+        # if not, return 404, no existence booking
+        if booking_non_exist:
+            return create_error_response(404, "Booking not found",
+                                         "There is no Booking with Booking ID: %(bookingID)s in Room: %(roomName)s" % {"bookingID":"booking_id", "roomName":"name"})
+        
+        # <REF:codes> 
+        # Code used from exercises. Origin authors: Ivan Sanchez, Mika Oja
+        # Access the headers content-type
+        if JSON != request.headers.get("Content-Type",""):
+            return create_error_response(415, "UnsupportedMediaType",
+                                         "Use a JSON compatible format")
+
+        # Parsing JSON request data, ignored mimetype
+        request_body = request.get_json(force=True)
+        #It throws a BadRequest exception, and hence a 400 code if the JSON is
+        #not wellformed
+        try:
+            username = request_body["username"]
+            bookingTime = request_body["bookingTime"]
+            email = request_body["email"]
+
+        except KeyError:
+            return create_error_response(400, "Wrong request format",
+                                         "Must have username, bookingTime and email in response body.")
+        else:
+            # Modify the booking in the database
+            if not g.con.modify_booking(booking_id, name, username, bookingTime):
+                return create_error_response(500, "Internal error",
+                                         "Booking information for %s cannot be updated" % booking_id
+                                        )
+        # </REF:codes>
+            return "", 204
 
     def delete(self, name, booking_id):
         """
@@ -601,7 +668,7 @@ class BookingOfRoom(Resource):
         """
 
         #PERFORM DELETE OPERATIONS
-        if g.con.delete_booking(name, booking_id):
+        if g.con.delete_booking(booking_id, name):
             return "", 204
         else:
             #Send 404 error message
