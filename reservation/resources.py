@@ -418,7 +418,75 @@ class User(Resource):
     """
 
     def post(self):
-        pass
+        """
+        Adds a new User.
+
+        REQUEST ENTITY BODY:
+        * Media type: JSON
+        * Profile: booking-profile
+          http://docs.tellusreservationapi.apiary.io/#reference
+            /profiles/booking-profile
+
+        RESPONSE STATUS CODE:
+        * Returns 201 if User was successfully created.
+        * Returns 400 if the input format for create new User is wrong or empty.
+        * Return 409 Conflict if there is another User with the same username
+        * Returns 415 if the input format is not JSON (unsupport media type)
+        * Returns 500 if failed to create new User in database
+        
+        NOTE:
+        * The attribute isAdmin is obtained from the column User.isAdmin
+        * The attribute username is obtained from the column User.username
+        * The attribute password is obtained from the column User.password
+        * The attribute firstname is obtained from the column User.firstname
+        * The attribute lastname is obtained from the column User.lastname
+        * The attribute email is obtained from the column User.email
+        * The attribute contactNumber is obtained from the column User.contactNumber
+        """
+
+        if JSON != request.headers.get("Content-Type", ""):
+            return create_error_response(415, "Unsupported Media Type",
+                                         "Use a JSON compatible format",
+                                         )
+        #PARSE THE REQUEST:
+        request_body = request.get_json(force=True)
+        if not request_body:
+            return create_error_response(415, "Unsupported Media Type",
+                                         "Use a JSON format",
+                                         )
+
+        #It throws a BadRequest exception, and hence a 400 code if the JSON is
+        #not wellformed
+        try:
+            username = request_body["username"]
+            isadmin = request_body["isAdmin"]
+            email = request_body["email"]
+            firstname = request_body["firstname"]
+            lastname = request_body["lastname"]
+            contactnumber = request_body["contactNumber"]
+
+        except KeyError:
+            #This is launched if either title or body does not exist or if
+            # the template.data array does not exist.
+            return create_error_response(400, "Wrong request format",
+                                         "Must have username, isAdmin, email, firstname, lastname and contactNumber in response body.")
+
+        # Conflict if user already exist, return 409
+        # filter in the list of Users.
+        find_username = filter(lambda x: "username" in x and x["username"] == username, g.con.get_users())
+        if not find_username:
+            return create_error_response(409, "Existing username",
+                                            "User name: %s has been used." % username)
+
+        #Create new user
+        new_user = g.con.add_user(username, request_body)
+        if not new_user:
+            return create_error_response(500, "Problem with the database",
+                                         "Cannot access the database")
+
+        #Return the response
+        return Response(status = 201,
+            headers={"Location": api.url_for(User, username=username)})
 
     def delete(self, username):
     """
@@ -594,14 +662,15 @@ class BookingOfRoom(Resource):
 
         REQUEST ENTITY BODY:
         * Media type: JSON
-        * Profile: TELLUS_BOOKING_PROFILE
-          /profiles/booking_profile/
+        * Profile: booking-profile
+          http://docs.tellusreservationapi.apiary.io/#reference
+            /profiles/booking-profile
 
         OUTPUT:
          * Returns 204 if the booking was successfully modified
          * Returns 400 if the input format for modify is wrong or empty.
          * Returns 404 if there is no booking with booking_id in that room name
-         * Returns 415 if the input is not JSON (unsupport media type)
+         * Returns 415 if the input format is not JSON (unsupport media type)
          * Returns 500 if failed to modify the booking in database
 
         NOTE:
@@ -613,21 +682,13 @@ class BookingOfRoom(Resource):
         """
 
         #CHECK THAT BOOKING EXISTS
-        room_bookings = g.con.get_bookings(name)
-        booking_non_exist = True
-        for booking in room_bookings:
-            if(booking_id == (int)booking["bookingID"]):
-                booking_non_exist = False
-                break
-
-        # if there is at least one booking with booking_id in that room name, continue
-        # if not, return 404, no existence booking
-        if booking_non_exist:
+        # filter in the list of booking by room name.
+        find_booking_id = filter(lambda x: "bookingID" in x and (int)x["bookingID"] == booking_id, g.con.get_bookings(name))
+        # if the booking ID not found, return 404, no existence booking
+        if not find_booking_id:
             return create_error_response(404, "Booking not found",
                                          "There is no Booking with Booking ID: %(bookingID)s in Room: %(roomName)s" % {"bookingID":"booking_id", "roomName":"name"})
         
-        # <REF:codes> 
-        # Code used from exercises. Origin authors: Ivan Sanchez, Mika Oja
         # Access the headers content-type
         if JSON != request.headers.get("Content-Type",""):
             return create_error_response(415, "UnsupportedMediaType",
@@ -635,6 +696,10 @@ class BookingOfRoom(Resource):
 
         # Parsing JSON request data, ignored mimetype
         request_body = request.get_json(force=True)
+        if not request_body:
+            return create_error_response(415, "Unsupported Media Type",
+                                         "Use a JSON compatible format",
+                                         )
         #It throws a BadRequest exception, and hence a 400 code if the JSON is
         #not wellformed
         try:
@@ -647,11 +712,10 @@ class BookingOfRoom(Resource):
                                          "Must have username, bookingTime and email in response body.")
         else:
             # Modify the booking in the database
-            if not g.con.modify_booking(booking_id, name, username, bookingTime):
+            if not g.con.modify_booking(booking_id, name, username, bookingTime, request_body):
                 return create_error_response(500, "Internal error",
                                          "Booking information for %s cannot be updated" % booking_id
                                         )
-        # </REF:codes>
             return "", 204
 
     def delete(self, name, booking_id):

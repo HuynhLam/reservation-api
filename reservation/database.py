@@ -154,6 +154,7 @@ class Connection(object):
                     "userid": '',
                     "accounttype": '',
                     "username": '',
+                    "password": '',
                     "firstname": '',
                     "lastname": '',
                     "email": '',
@@ -163,8 +164,9 @@ class Connection(object):
             where:
 
             * ``userid``: Unique identifying user ID.
-            * ``accounttype``: Account type to identify User or Admin.
+            * ``isAdmin``: Account type to identify User or Admin.
             * ``username``: Username of user login.
+            * ``password``: User's login password.
             * ``firstname``: First name of user.
             * ``lastname``: Last name of user.
             * ``email``: Email of user.
@@ -174,9 +176,10 @@ class Connection(object):
 
         '''
         return {
-            "userid": str(row["userID"]),
-            "accounttype": row["accountType"],
+            "userID": str(row["userID"]),
+            "isAdmin": str(row["isAdmin"]),
             "username": row["username"],
+            "password": row["password"],
             "firstname": row["firstName"],
             "lastname": row["lastName"],
             "email": row["email"],
@@ -228,6 +231,7 @@ class Connection(object):
             .. code-block:: javascript
 
                 {
+                    "bookingID": '',
                     "roomname": '',
                     "username": '',
                     "bookingTime": '',
@@ -264,6 +268,42 @@ class Connection(object):
 
     #DATABASE API
     #User
+    def get_users(self):
+        '''
+        Extracts all existence Users in the database.
+        :return:A list of Users. Each user is a dictionary containing
+                the following keys:
+
+            *``userID``     :ID of User. INTEGER. UNIQUE.
+            *``isAdmin``    :is current user admin or not. 0 mean not admin. INTEGER. UNIQUE.
+            *``username``   :Username. TEXT. UNIQUE.
+            *``password``   :User password. TEXT.
+            *``firstName``  :First name of user. TEXT.
+            *``lastname``   :Last name of user. TEXT.
+            *``email``      :User's email address. TEXT.
+            *``contactnumber``  :User's contact number. TEXT.
+
+            *There is no FOREIGN KEY.
+            *None is returned if the database has no Users.
+
+        '''
+        # SQL query to get the list of existence Users
+        query = 'SELECT * FROM Users'
+        # Cursor and row initialization
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        # Execute main SQL Statement
+        cur.execute(query)
+        # Get results
+        rows = cur.fetchall()
+        if rows is None:
+            return None
+        # Build the return object
+        users = []
+        for row in rows:
+            users.append(self._create_user_object(row))
+        return users
+
     def add_user(self, username, user_dict):
         '''
         Create a new user in the database.

@@ -42,6 +42,15 @@ USER_DICT_CORRECT_DATA = {'isadmin': 0,
 USER_EMPTY_ROW = (0, u'donut', None, None, None, None, None)
 EXISTING_USER = "para"
 NOT_EXISTING_USER = "CrazyBoy95"
+GET_USERS_USERNAME = "lam"
+USER2 = {   'userID': '2',
+            'isAdmin': '0',
+            'username': 'lam',
+            'password': 'pwp2017',
+            'firstname': 'Lam',
+            'lastname': 'Huynh',
+            'email': 'lam.huynh@ee.oulu.fi',
+            'contactnumber': '0411322922' }
 INITIAL_SIZE_USER = 4
 
 class UserDBAPITestCase(unittest.TestCase):
@@ -92,6 +101,20 @@ class UserDBAPITestCase(unittest.TestCase):
             self.assertEquals(len(users), INITIAL_SIZE_USER)
 
     #TESTS FOR Users
+    def test_get_users(self):
+        '''
+        Test that get_users work correctly and extract required user info
+        '''
+        print '('+self.test_get_users.__name__+')', \
+              self.test_get_users.__doc__
+        users = self.connection.get_users()
+        #Check that the size is correct
+        self.assertEquals(len(users), INITIAL_SIZE_USER)
+        #Iterate through all users and check if the users with GET_USERS_USERNAME is correct format:
+        for user in users:
+            if user["username"] == GET_USERS_USERNAME:
+                self.assertDictContainsSubset(user, USER2)
+    
     def test_add_user(self):
         '''
         Test that I can add new user
