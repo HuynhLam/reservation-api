@@ -12,7 +12,9 @@ TEST_FOLDER="tests/"
 # File names
 declare -a db_files=("tellus_schema_dump.sql" "tellus_data_dump.sql")
 declare -a api_files=("database.py" "resources.py")
-declare -a test_files=("tests_database_api_bookings.py" "tests_database_api_users.py")
+declare -a test_files=("tests_database_api_bookings.py" "tests_database_api_users.py" "tests_database_api_rooms.py"
+"tests_resource_api_room.py" "tests_resource_api_bookings_of_room.py" "tests_resource_api_booking_of_user.py"
+"tests_resource_api_bookings_of_user.py" "tests_resource_api_history_bookings.py")
 
 # Messages to inform user
 ERR="ERROR: API cannot work properly without this file."
