@@ -1,6 +1,6 @@
 ###############################################################################
 # Bash script file to create and populate test database for unit tests.
-# And for running all unit tests. It is recommended to use this script for
+# And for running api unit tests. It is recommended to use this script for
 # testing.
 ###############################################################################
 #!/bin/bash
@@ -11,8 +11,7 @@ DB_SCHEMA_FILE_NAME="tellus_schema_dump.sql"
 DB_DATA_FILE_NAME="tellus_data_dump.sql"
 DB_TEST_FILE_NAME="test_tellus.db"
 TEST_FOLDER="tests"
-declare -a test_files=("tests_database_api_users" "tests_database_api_rooms" "tests_database_api_bookings"
-"tests_resource_api_room" "tests_resource_api_bookings_of_room" "tests_resource_api_booking_of_user"
+declare -a test_files=("tests_resource_api_room" "tests_resource_api_bookings_of_room" "tests_resource_api_booking_of_user"
 "tests_resource_api_bookings_of_user" "tests_resource_api_history_bookings")
 
 function create_test_db {
@@ -63,7 +62,7 @@ do
         echo ".........................."
         python -m $TEST_FOLDER.$i
     fi
-    
+
     ## Remove the test_tellus.db when run the final model
     if [ -f "$DB_FOLDER$DB_TEST_FILE_NAME" ]; then
         echo "Removing old test database."
