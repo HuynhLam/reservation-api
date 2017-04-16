@@ -28,7 +28,7 @@ The following resources are provided by the API.
 Because of the time restrictions, not all methods are implemented. 
 The below table shows available methods under resources.
 
-![implemented methods](/projects/PWP14/repos/project/raw/documentation/resources_list.png)
+![implemented methods](/projects/PWP14/repos/project/raw/documentation/methods.png)
 
 
 ## Requirements
