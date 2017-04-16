@@ -2,34 +2,55 @@
 
 This is an API to reserve rooms at Tellus.
 
-## [Tellus Room Reservation API Documentation](http://docs.tellusreservationapi.apiary.io/#)
+It consists of 2 APIs, one to interact with the database and the other the main API which provides resources.
+Both of them are explained below, please note that the section *How to Use* explains 
+how to setup and use resources while section *Database API* explains how to setup and handle 
+database interactions.
 
-## Reservation API
+The following part explains the *Reservation API* in general, please note that it depends on 
+*Database API* so, **before running `resources.py` make sure that *Database API* is working.** 
 
-*Reservation part will be implemented soon.*
+**To read more about *Database API*, please see the section [Database API](#markdown-header-database-api) in this Readme file.**
 
-## Database API
+## Tellus Room Reservation API Documentation
 
-We are providing an API to interact with database. Instead of interacting with 
-database directly, it is possible to do changes via Python with Database API.
+The documentation of the API can be found in 
+[Tellus Room Reservation API Documentation page.](http://docs.tellusreservationapi.apiary.io/#)
 
-### Requirements
+## List of Resources
+
+The following resources are provided by the API.
+
+![resources list](/projects/PWP14/repos/project/raw/master/documentation/resources_list.png)
+
+## Implemented Methods
+
+Because of the time restrictions, not all methods are implemented. 
+The below table shows available methods under resources.
+
+![implemented methods](/projects/PWP14/repos/project/raw/master/documentation/methods.png)
+
+
+## Requirements
 
 To run API, the following tools are needed:
 
 * [Python 2.7.X](https://www.python.org/download/releases/2.7/)
 * [sqlite3](https://www.sqlite.org/)
 
-For Python the following library is needed.
+For Python the following additional libraries are needed.
 
 * [sqlite3](https://docs.python.org/2/library/sqlite3.html)
+* [Flask](http://flask.pocoo.org/)
+* [Flask-RESTful](https://flask-restful.readthedocs.io/en/0.3.5/)
 
 ### How to Use
 
 * [Cloning Repo](#markdown-header-cloning-repo)
 * [Checking Structure](#markdown-header-checking-structure)
 * [Creating Database Tables and Populating Them](#markdown-header-creating-database-tables-and-populating-them)
-* [Using Database API](#markdown-header-using-database-api)
+* [Database API](#markdown-header-using-database-api)
+* [Using Tellus Room Reservation API](#markdown-header-using-tellus-room-reservation-api)
 * [Running Tests](#markdown-header-running-tests)
 
 #### Cloning Repo
@@ -45,6 +66,7 @@ If you want to use them, you must give execute permissions to these scripts.
     $ chmod +x check_file_structure.sh
     $ chmod +x create_and_populate_db.sh
     $ chmod +x run_tests.sh
+    $ chmod +x run_tests_api_resources.sh
 ```
 
 _project_ is the name of the folder which includes all codes.
@@ -78,7 +100,13 @@ However, it is also possible to do these manually.
     $ cat database/tellus_data_dump.sql | sqlite3 tellus.db
 ```
 
-#### Using Database API
+
+#### Database API
+
+We are providing an API to interact with database. Instead of interacting with 
+database directly, it is possible to do changes via Python with Database API.
+
+##### Using Database API
 
 To interact with database, it is needed to create `Engine` object and to make
 changes on database a _connection_ is needed. `Engine` object takes database 
@@ -97,6 +125,46 @@ For example, a user can be removed from database as follows.
     >>> con.delete_user(username='Trump')
 ```
 
+#### Using Tellus Room Reservation API
+
+To run API, it is needed to run `resources.py` via `python` command. 
+
+```bash
+    $ python reservation/resources.py
+```
+
+An example output of the above command can be like that:
+
+```bash
+    * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+    * Restarting with stat
+    * Debugger is active!
+    * Debugger pin code: 204-872-798
+```
+
+As it can be recognize from the example output, API runs in debug mode 
+automatically. To turn off debug mode, following line in `resources.py` 
+must be modified as `app.debug = False`
+
+```python
+    app.debug = True
+```
+
+> **Warning**
+>
+> Debug mode should never be used in a production environment!
+
+After application run in the command-line, it will run under `port 5000` in `localhost`.
+
+URL to access the API is **`/tellus/api/`**
+
+For example if you visit `http://localhost:5000/tellus/api/bookings/` 
+in your browser, or send GET request via `curl`, it will return list of bookings.
+
+```bash
+    $ curl http://localhost:5000/tellus/api/bookings/
+```
+
 #### Running Tests
 
 Tests are places under _tests_ directory. We highly recommend to use 
@@ -109,4 +177,15 @@ To run tests easily, you can call **run_tests.sh** script from terminal.
 
 ```bash
     $ ./run_tests.sh
+```
+
+##### Running Only the Resource Tests
+
+Other than **run_tests.sh** which runs all tests including Database API tests, 
+we are providing **run_tests_api_resources.sh** which only runs tests that 
+are related with `resources.py`. The reason why to provide this script is 
+providing a clear output for resource tests.
+
+```bash
+    $ ./run_tests_api_resources.sh
 ```
