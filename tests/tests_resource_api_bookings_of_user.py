@@ -21,6 +21,7 @@ resources.app.config["SERVER_NAME"] = "localhost:5000"
 resources.app.config.update({"Engine": ENGINE})
 
 USER_NAME = "lam"
+WRONG_USER_NAME = "usr1"
 
 
 
@@ -49,6 +50,7 @@ class BookingsOfUserTestCase(unittest.TestCase):
         # Create a test client
         self.client = resources.app.test_client()
         self.url = resources.api.url_for(resources.BookingsOfUser, username=USER_NAME)
+        self.wrong_url = resources.api.url_for(resources.BookingsOfUser, username=WRONG_USER_NAME)
 
     def tearDown(self):
         """
@@ -91,6 +93,14 @@ class BookingsOfUserTestCase(unittest.TestCase):
             self.assertIn("collection", item["@controls"])
             self.assertIn("method", item["@controls"]["tellus:delete"])
             self.assertEqual(item["@controls"]["tellus:delete"]["method"], "DELETE")
+
+    def test_get_nonexisting_bookings_of_user(self):
+        """
+        Try to get nonexisting bookings with wrong username.
+        """
+        print "("+self.test_get_nonexisting_bookings_of_user.__name__+")", self.test_get_nonexisting_bookings_of_user.__doc__
+        resp = self.client.get(self.wrong_url)
+        self.assertEquals(resp.status_code, 404)
 
 if __name__ == "__main__":
     print "Start running tests"

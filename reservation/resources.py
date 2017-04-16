@@ -2,8 +2,7 @@ import json
 from time import strftime, gmtime
 
 from flask import Flask, request, Response, g, _request_ctx_stack, redirect, send_from_directory
-from flask_restful import Resource, Api, abort
-from werkzeug.exceptions import HTTPException, NotFound
+from flask_restful import Resource, Api
 
 import database
 
@@ -11,7 +10,6 @@ import database
 MASON = "application/vnd.mason+json"
 JSON = "application/json"
 
-# TODO 1 put profile links here, change the variable namess
 TELLUS_USER_PROFILE = "/profiles/user_profile/"
 TELLUS_ROOM_PROFILE = "/profiles/room_profile/"
 TELLUS_BOOKING_PROFILE = "/profiles/booking_profile/"
@@ -20,14 +18,8 @@ ERROR_PROFILE = "/profiles/error_profile/"
 # Fill these in
 APIARY_PROFILES_URL = "http://docs.tellusreservationapi.apiary.io/#reference/profiles"
 APIARY_RELS_URL = "http://docs.tellusreservationapi.apiary.io/#reference/link-relations"
-## end of TODO 1
-
-# TODO 2 create schemas like in the exercises in json format
-USER_SCHEMA_URL = "/forum/schema/user/"
-PRIVATE_PROFILE_SCHEMA_URL = "/forum/schema/private-profile/"
 
 LINK_RELATIONS_URL = "/tellus/link-relations/"
-## end of TODO 2
 
 # Define the application and the api
 # Set the debug is True as default but it must be set as False after testing.
@@ -130,7 +122,6 @@ class ReservationObject(MasonObject):
         super(ReservationObject, self).__init__(**kwargs)
         self["@controls"] = {}
 
-    # TODO 3 implement mason response functions
     def add_control_add_user(self):
         """
         This adds the add-user link to an object. Intended for the document object.
@@ -392,8 +383,6 @@ class ReservationObject(MasonObject):
             "href": api.url_for(HistoryBookings),
             "title": "History Bookings"
         }
-
-    ## end of todo3
 
 
 ##### This ERROR HANDLERS functions are borrowed from course exercises. #####
@@ -886,12 +875,12 @@ class BookingsOfUser(Resource):
          * The attribute firstname is obtained from the column bookings.firstname
          * The attribute lastname is obtained from the column bookings.lastname
         """
-        #TODO implement get user
-        # # Check the room exists
-        # room = filter(lambda x: "roomname" in x and x["roomname"] == name, g.con.get_rooms())
-        # if not room:
-        #     return create_error_response(404, "Room does not exist",
-        #                                  "There is no a room with name %s" % name)
+
+        # Check the user exists
+        find_username = filter(lambda x: "username" in x and x["username"] == username, g.con.get_users())
+        if not find_username:
+            return create_error_response(404, "User does not exist",
+                                          "There is no a user with username %s" % username)
 
         # Extract bookings from database
         bookings_db = filter(lambda x: "username" in x and x["username"] == username, g.con.get_bookings())
@@ -1102,7 +1091,6 @@ class HistoryBookings(Resource):
         # RENDER
         return Response(json.dumps(envelope), 200, mimetype=MASON + ";" + TELLUS_BOOKING_PROFILE)
 
-#TODO 4 change them base on our thing
 # Define the routes
 api.add_resource(User, "/tellus/api/users/<username>/",
                  endpoint="user")
@@ -1122,7 +1110,6 @@ api.add_resource(BookingOfUser, "/tellus/api/users/<username>/bookings/<booking_
                  endpoint="booking_of_user")
 api.add_resource(HistoryBookings, "/tellus/api/bookings/history/",
                  endpoint="history_bookings")
-## end of todo4
 
 
 # Redirect profile
@@ -1134,12 +1121,6 @@ def redirect_to_profile(profile_name):
 @app.route("/tellus/link-relations/<rel_name>/")
 def redirect_to_rels(rel_name):
     return redirect(APIARY_RELS_URL + rel_name)
-
-
-# Send our schema file(s)
-@app.route("/tellus/schema/<schema_name>/")
-def send_json_schema(schema_name):
-    return send_from_directory(app.static_folder, "schema/{}.json".format(schema_name))
 
 
 # Start the application
