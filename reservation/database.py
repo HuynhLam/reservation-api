@@ -348,12 +348,12 @@ class Connection(object):
         query2 = 'INSERT INTO Users(isAdmin, username, password, firstName, lastName, email, contactNumber)\
                                   VALUES(?,?,?,?,?,?,?)'
         # temporal variables for user table
-        _isadmin = user_dict.get('isadmin', 0)
+        _isadmin = user_dict.get('isAdmin', 0)
         _password = user_dict.get('password', None)
         _firstname = user_dict.get('firstname', None)
         _lastname = user_dict.get('lastname', None)
         _email = user_dict.get('email', None)
-        _contactnumber = user_dict.get('contactnumber', None)
+        _contactnumber = user_dict.get('contactNumber', None)
 
         # Activate foreign key support
         self.set_foreign_keys_support()
@@ -601,14 +601,6 @@ class Connection(object):
             it returns None if booking is not modify in database.
 
         '''
-        # Create the SQL Statements
-        # SQL Statement for extracting the bookingID given a bookingID
-        query1 = 'SELECT bookingID from Bookings WHERE bookingID = ? AND roomName = ? AND username = ? AND bookingTime = ?'
-        # SQL Statement to create the row in Bookings table
-        query2 = 'UPDATE Bookings SET roomName=?, username=?, bookingTime=?, firstName=?,\
-                                    lastName=?, email=?, contactNumber=?\
-                                    WHERE roomName = ? AND username = ? AND bookingTime = ?'
-
         # Check dict
         if not 'bookingID' in booking_dict:
             return None
@@ -628,7 +620,6 @@ class Connection(object):
             return None
 
         #temporal variables
-        _roomname       = booking_dict.get('roomname', None)
         _username       = booking_dict.get('username', None)
         _bookingtime    = booking_dict.get('bookingTime', None)
         _firstname      = booking_dict.get('firstname', None)
@@ -640,22 +631,21 @@ class Connection(object):
         # Cursor and row initialization
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
-        # Execute the statement to extract the roomname, username, bookingTime associated to a bookingID
-        pvalue = (booking_id, roomname, username, bookingTime)
-        cur.execute(query1, pvalue)
-        # Returns row if already exists
+        # Check is that booking exist
+        cur.execute('''SELECT * from Bookings WHERE bookingID=%d''' % booking_id)
         row = cur.fetchone()
         # If there is no booking return None, otherwise update the existence booking
         if row is None:
             return None
         else:
-            # Update the row in Bookings table
-            # Execute the statement
-            pvalue = (_roomname, _username, _bookingtime, _firstname, _lastname, _email, _contactnumber, roomname, username, bookingTime)
-            cur.execute(query2, pvalue)
-            self.con.commit()
+            # Update the row in Bookings table, run cursor.execute()
+            try:
+                cur.execute('''UPDATE Bookings SET bookingTime=?, firstname=?, lastname=?, email=?, contactnumber=? WHERE bookingID = ?''', (_bookingtime, _firstname, _lastname, _email, _contactnumber, booking_id))
+                self.con.commit()
+            except:
+                print "database.py modify_booking UPDATE database ERROR"
             # We do not do any comprobation and return the booking_id, roomname, username, bookingTime
-            return booking_id, _roomname, _username, _bookingtime
+            return booking_id, roomname, username, _bookingtime
 
     def delete_booking(self, booking_id, roomName=None, username=None, bookingTime=None):
         '''
@@ -664,15 +654,20 @@ class Connection(object):
 
         '''
         #Create the SQL Statements
-        query = "DELETE FROM Bookings WHERE bookingID = ? AND roomName = ? AND username = ? AND bookingTime = ?"
+        query = "DELETE FROM Bookings WHERE bookingID = '%d'" % booking_id
+        if roomName is not None:
+            query += " AND roomName = '%s'" % roomName 
+        if username is not None:
+            query += " AND username = '%s'" % username
+        if bookingTime is not None:
+            query += " AND bookingTime = '%s'" % bookingTime
         # Activate foreign key support
         self.set_foreign_keys_support()
         #Cursor and row initialization
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         #Execute the statement to delete
-        pvalue = (booking_id, roomName, username, bookingTime)
-        cur.execute(query, pvalue)
+        cur.execute(query)
         self.con.commit()
         #Check that it has been deleted
         if cur.rowcount < 1:

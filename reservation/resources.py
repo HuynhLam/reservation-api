@@ -1,7 +1,8 @@
 import json
 
 from flask import Flask, request, Response, g, _request_ctx_stack, redirect, send_from_directory
-from flask.ext.restful import Resource, Api, abort
+#from flask.ext.restful import Resource, Api, abort
+from flask_restful import Resource, Api, abort
 from werkzeug.exceptions import HTTPException, NotFound
 
 import database
@@ -11,10 +12,10 @@ MASON = "application/vnd.mason+json"
 JSON = "application/json"
 
 # TODO 1 put profile links here, change the variable namess
-TELLUS_USER_PROFILE = "/profiles/user-profile/"
-TELLUS_ROOM_PROFILE = "/profiles/room-profile/"
+TELLUS_USER_PROFILE = "/profiles/user_profile/"
+TELLUS_ROOM_PROFILE = "/profiles/room_profile/"
 TELLUS_BOOKING_PROFILE = "/profiles/booking_profile/"
-ERROR_PROFILE = "/profiles/error-profile/"
+ERROR_PROFILE = "/profiles/error_profile/"
 
 # Fill these in
 APIARY_PROFILES_URL = "http://docs.tellusreservationapi.apiary.io/#reference/profiles"
@@ -25,7 +26,7 @@ APIARY_RELS_URL = "http://docs.tellusreservationapi.apiary.io/#reference/link-re
 USER_SCHEMA_URL = "/forum/schema/user/"
 PRIVATE_PROFILE_SCHEMA_URL = "/forum/schema/private-profile/"
 
-LINK_RELATIONS_URL = "/forum/link-relations/"
+LINK_RELATIONS_URL = "/tellus/link-relations/"
 ## end of TODO 2
 
 # Define the application and the api
@@ -184,8 +185,8 @@ class ReservationObject(MasonObject):
         """
 
         self["@controls"]["tellus:delete"] = {
-            "href": api.url_for(User, username=username),
             "title": "Delete this user",
+            "href": api.url_for(User, username=username),
             "method": "DELETE"
         }
 
@@ -195,8 +196,9 @@ class ReservationObject(MasonObject):
         """
 
         self["@controls"]["tellus:delete"] = {
+            "title": "Delete booking",
             "href": api.url_for(BookingOfRoom, name=name, booking_id=booking_id),
-            "title": "Delete booking"
+            "method": "DELETE"
         }
 
     def add_control_delete_booking_of_user(self, username, booking_id):
@@ -205,11 +207,12 @@ class ReservationObject(MasonObject):
         """
 
         self["@controls"]["tellus:delete"] = {
+            "title": "Delete booking",
             "href": api.url_for(BookingOfUser, username=username, booking_id=booking_id),
-            "title": "Delete booking"
+            "method": "DELETE"
         }
 
-    def add_control_edit_room(self):
+    def add_control_edit_room(self, name):
         """
         Adds the edit control to a room object. For the schema we need
         the name of the room that we want to change.
@@ -218,25 +221,20 @@ class ReservationObject(MasonObject):
         """
         self["@controls"]["edit"] = {
                     "title": "Modify Room",
-                    "href": "/tellus/api/rooms/",
+                    "href": api.url_for(Room, name=name),
                     "encoding": "json",
                     "method": "PUT",
                     "schema": {
                         "type": "object",
                         "properties": {
-                            "roomname": {
-                                "title": "Room Name",
-                                "description": "Room name of the room",
+                            "resources": {
+                                "title": "Resources",
+                                "description": "Resources avaible in room",
                                 "type": "string"
                             },
-                            "picture": {
-                                "title": "Picture",
-                                "description": "Picture of the room",
-                                "type": "string"
-                            },
-                            "email": {
-                                "title": "resources",
-                                "description": "Equipment inside the room",
+                            "photo": {
+                                "title": "Photo",
+                                "description": "Photo of the room",
                                 "type": "string"
                             }
                         },
@@ -262,6 +260,15 @@ class ReservationObject(MasonObject):
         self["@controls"]["tellus:bookings-room"] = {
             "href": api.url_for(Bookings, name=name),
             "title": "List all bookings of Room"
+        }
+
+    def add_control_books_room(self, name):
+        """
+        This adds the books-room link to an object. Intended for the document object.
+        """
+
+        self["@controls"]["tellus:books-room"] = {
+            "href": api.url_for(BookingsOfRoom, name=name),
         }
 
     def add_control_bookings_user(self, username):
@@ -417,7 +424,7 @@ class User(Resource):
     Resource User implementation
     """
 
-    def post(self):
+    def post(self, username):
         """
         Adds a new User.
 
@@ -444,12 +451,12 @@ class User(Resource):
         * The attribute contactNumber is obtained from the column User.contactNumber
         """
 
-        if JSON != request.headers.get("Content-Type", ""):
+        if JSON != request.headers['Content-Type']:
             return create_error_response(415, "Unsupported Media Type",
-                                         "Use a JSON compatible format",
+                                        "Use a JSON compatible format %s" % request.headers['Content-Type'],
                                          )
         #PARSE THE REQUEST:
-        request_body = request.get_json(force=True)
+        request_body = request.get_json()
         if not request_body:
             return create_error_response(415, "Unsupported Media Type",
                                          "Use a JSON format",
@@ -458,8 +465,9 @@ class User(Resource):
         #It throws a BadRequest exception, and hence a 400 code if the JSON is
         #not wellformed
         try:
-            username = request_body["username"]
             isadmin = request_body["isAdmin"]
+            _username = request_body["username"]
+            password = request_body["password"]
             email = request_body["email"]
             firstname = request_body["firstname"]
             lastname = request_body["lastname"]
@@ -469,12 +477,12 @@ class User(Resource):
             #This is launched if either title or body does not exist or if
             # the template.data array does not exist.
             return create_error_response(400, "Wrong request format",
-                                         "Must have username, isAdmin, email, firstname, lastname and contactNumber in response body.")
+                                         "Must have isAdmin, username, password, email, firstname, lastname and contactNumber in response body.")
 
         # Conflict if user already exist, return 409
         # filter in the list of Users.
         find_username = filter(lambda x: "username" in x and x["username"] == username, g.con.get_users())
-        if not find_username:
+        if find_username:
             return create_error_response(409, "Existing username",
                                             "User name: %s has been used." % username)
 
@@ -489,24 +497,23 @@ class User(Resource):
             headers={"Location": api.url_for(User, username=username)})
 
     def delete(self, username):
-    """
+        """
         Deletes 1 User from the Tellus API.
 
         INPUT PARAMETERS:
         :param str username: username of the User that we want to delete
 
         RESPONSE STATUS CODE
-         * Returns 204 if the User was successfully deleted
-         * Returns 404 if the username did not exist.
+        * Returns 204 if the User was successfully deleted
+        * Returns 404 if the username did not exist.
         """
-
         #PERFORM DELETE OPERATIONS
         if g.con.delete_user(username):
             return "", 204
         else:
             #Send 404 error message
             return create_error_response(404, "Unknown User",
-                                         "There is no User with username %s" % username)
+                                     "There is no User with username %s" % username)
 
 
 class RoomsList(Resource):
@@ -539,7 +546,6 @@ class RoomsList(Resource):
 
         # Create envelope for response
         envelope = ReservationObject()
-        
         envelope.add_namespace("tellus", LINK_RELATIONS_URL)
         envelope.add_control("self", href=api.url_for(RoomsList))
 
@@ -547,12 +553,13 @@ class RoomsList(Resource):
         items = envelope["items"] = []
 
         for room in rooms_db:
-            item = ReservationObject(name=room["roomname"])
-                                     
+            item = ReservationObject(name=room["roomname"], photo=room["picture"], resources=room["resources"])
+
+            item.add_control("self", href=api.url_for(Room, name=room["roomname"]))
             item.add_control("profile", href=TELLUS_ROOM_PROFILE)
             item.add_control("collection", href=api.url_for(RoomsList))
-            
-            item.add_control_edit_room()
+            item.add_control_edit_room(room["roomname"])
+            item.add_control_books_room(name=room["roomname"])
             
             items.append(item)
 
@@ -610,15 +617,13 @@ class Bookings(Resource):
         items = envelope["items"] = []
 
         for booking in bookings_db:
-            item = ReservationObject(name=booking["roomname"],
-                                     username=booking["username"],
-                                     bookingTime=booking["bookingTime"])
-                                     
+            item = ReservationObject(   bookingID=booking["bookingID"],
+                                        name=booking["roomname"],
+                                        username=booking["username"],
+                                        bookingTime=booking["bookingTime"])
+
             item.add_control("profile", href=TELLUS_BOOKING_PROFILE)
-            item.add_control("collection", href=api.url_for(Bookings))
-            
-            item.add_control_bookings_room(name=booking["roomname"])
-            item.add_control_bookings_user(username=booking["username"])
+            item.add_control_delete_booking_of_room(booking["roomname"], booking["bookingID"])
             
             items.append(item)
 
@@ -683,11 +688,11 @@ class BookingOfRoom(Resource):
 
         #CHECK THAT BOOKING EXISTS
         # filter in the list of booking by room name.
-        find_booking_id = filter(lambda x: "bookingID" in x and (int)x["bookingID"] == booking_id, g.con.get_bookings(name))
+        find_booking_id = filter(lambda x: "bookingID" in x and x["bookingID"] == int(booking_id), g.con.get_bookings(name))
         # if the booking ID not found, return 404, no existence booking
         if not find_booking_id:
             return create_error_response(404, "Booking not found",
-                                         "There is no Booking with Booking ID: %(bookingID)s in Room: %(roomName)s" % {"bookingID":"booking_id", "roomName":"name"})
+                                         "There is no Booking with Booking ID: %(bookingID)s in Room: %(roomName)s | find_booking_id = %(v3)s" % {"bookingID":booking_id, "roomName":name, "v3":find_booking_id})
         
         # Access the headers content-type
         if JSON != request.headers.get("Content-Type",""):
@@ -695,7 +700,7 @@ class BookingOfRoom(Resource):
                                          "Use a JSON compatible format")
 
         # Parsing JSON request data, ignored mimetype
-        request_body = request.get_json(force=True)
+        request_body = request.get_json()
         if not request_body:
             return create_error_response(415, "Unsupported Media Type",
                                          "Use a JSON compatible format",
@@ -703,18 +708,22 @@ class BookingOfRoom(Resource):
         #It throws a BadRequest exception, and hence a 400 code if the JSON is
         #not wellformed
         try:
-            username = request_body["username"]
-            bookingTime = request_body["bookingTime"]
-            email = request_body["email"]
+            _username       = request_body['username']
+            _bookingtime    = request_body['bookingTime']
+            _firstname      = request_body['firstname']
+            _lastname       = request_body['lastname']
+            _email          = request_body['email']
+            _contactnumber  = request_body['contactnumber']
 
         except KeyError:
             return create_error_response(400, "Wrong request format",
-                                         "Must have username, bookingTime and email in response body.")
+                                         "Must have username, bookingTime, firstname, lastname, email, contactNumber in response body.")
         else:
             # Modify the booking in the database
-            if not g.con.modify_booking(booking_id, name, username, bookingTime, request_body):
+            mod = g.con.modify_booking(int(booking_id), name, _username, _bookingtime, request_body)
+            if not mod:
                 return create_error_response(500, "Internal error",
-                                         "Booking information for %s cannot be updated" % booking_id
+                                         "Booking information for %(v1)s cannot be updated in database |mod = %(v2)s" % {"v1":booking_id, "v2":mod}
                                         )
             return "", 204
 
@@ -732,12 +741,12 @@ class BookingOfRoom(Resource):
         """
 
         #PERFORM DELETE OPERATIONS
-        if g.con.delete_booking(booking_id, name):
+        if g.con.delete_booking(int(booking_id), name):
             return "", 204
         else:
             #Send 404 error message
-            return create_error_response(404, "Unknown Booking",
-                                         "There is no Booking with Booking ID: %(bookingID)s in Room: %(roomName)s" % {"bookingID":"booking_id", "roomName":"name"})
+            return create_error_response(404, "Unknown Booking", 
+                                         "There is no booking with bookingID: %(bookingID)s, in room: %(roomName)s" % {"bookingID":booking_id, "roomName":name})
 
 
 class BookingOfUser(Resource):
