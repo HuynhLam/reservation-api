@@ -465,12 +465,20 @@ class User(Resource):
     def post(self, username):
         """
         Adds a new User.
+        
+        INPUT PARAMETERS:
+          :param str username: username of the new User.
 
         REQUEST ENTITY BODY:
         * Media type: JSON
-        * Profile: booking-profile
+        * Profile: user-profile
           http://docs.tellusreservationapi.apiary.io/#reference
-            /profiles/booking-profile
+            /profiles/user-profile
+
+        The body should be a JSON document that matches the schema for User.
+
+        RESPONSE HEADERS:
+         * Location: Contains the URL of the User
 
         RESPONSE STATUS CODE:
         * Returns 201 if User was successfully created.
@@ -536,7 +544,7 @@ class User(Resource):
 
     def delete(self, username):
         """
-        Deletes 1 User from the Tellus API.
+        Deletes an User from the Tellus API.
 
         INPUT PARAMETERS:
         :param str username: username of the User that we want to delete
@@ -623,7 +631,7 @@ class Room(Resource):
           http://docs.tellusreservationapi.apiary.io/#reference
             /profiles/room-profile
 
-        OUTPUT:
+        RESPONSE STATUS CODE:
          * Returns 204 if the room was successfully modified
          * Returns 400 if the input format for modify is wrong or empty.
          * Returns 404 if there is no room with this name
@@ -739,6 +747,8 @@ class BookingsOfRoom(Resource):
         * Profile: booking-profile
             http://docs.tellusreservationapi.apiary.io/#reference
             /profiles/booking-profile
+
+        Semantic descriptions used in items: roomname
 
         NOTE:
          * The attribute contactnumber is obtained from the column bookings.contactnumber
@@ -869,6 +879,8 @@ class BookingsOfUser(Resource):
             http://docs.tellusreservationapi.apiary.io/#reference
             /profiles/booking-profile
 
+        Semantic descriptions used in items: username
+
         NOTE:
          * The attribute contactnumber is obtained from the column bookings.contactnumber
          * The attribute email is obtained from the column bookings.email
@@ -917,7 +929,7 @@ class BookingOfRoom(Resource):
 
     def put(self, booking_id, name):
         """
-        Modifies bookingTime of one booking by a specific User of a specific Room.
+        Modifies booking of a specific User in a specific Room.
 
         INPUT PARAMETERS:
         :param str booking_id: The booking ID of the booking we want to modify
@@ -929,19 +941,12 @@ class BookingOfRoom(Resource):
           http://docs.tellusreservationapi.apiary.io/#reference
             /profiles/booking-profile
 
-        OUTPUT:
+        RESPONSE STATUS CODE:
          * Returns 204 if the booking was successfully modified
          * Returns 400 if the input format for modify is wrong or empty.
          * Returns 404 if there is no booking with booking_id in that room name
          * Returns 415 if the input format is not JSON (unsupport media type)
          * Returns 500 if failed to modify the booking in database
-
-        NOTE:
-         * The attribute contactnumber is obtained from the column bookings.contactnumber
-         * The attribute email is obtained from the column bookings.email
-         * The attribute firstname is obtained from the column bookings.firstname
-         * The attribute lastname is obtained from the column bookings.lastname
-
         """
 
         #CHECK THAT BOOKING EXISTS
@@ -987,7 +992,7 @@ class BookingOfRoom(Resource):
 
     def delete(self, name, booking_id):
         """
-        Deletes 1 Booking of a specific Room from the Tellus API.
+        Deletes a Booking of a specific Room from the Tellus API.
 
         INPUT PARAMETERS:
         :param str name: name of the Room, which contain the Booking we want to remove.
