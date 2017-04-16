@@ -1042,7 +1042,7 @@ class BookingOfUser(Resource):
                                          "There is no Booking with Booking ID: %s" % booking_id)
         booking = bookings_db[0]
         # PERFORM DELETE OPERATIONS
-        if g.con.delete_booking(booking_id, booking["roomname"], booking["username"], booking["bookingTime"]):
+        if g.con.delete_booking(int(booking_id), booking["roomname"], booking["username"], booking["bookingTime"]):
             return "", 204
         else:
             # Send 404 error message

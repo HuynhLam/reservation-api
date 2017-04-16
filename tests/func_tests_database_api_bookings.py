@@ -28,7 +28,7 @@ import reservation.database as database
 
 #Path to the database file, different from the deployment db
 #Please run setup script first to make sure test database is OK.
-DB_PATH = "database/tellus.db"
+DB_PATH = "database/test_tellus.db"
 ENGINE = database.Engine(DB_PATH)
 
 MASONJSON = "application/vnd.mason+json"

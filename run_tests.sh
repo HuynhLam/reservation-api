@@ -13,7 +13,8 @@ DB_TEST_FILE_NAME="test_tellus.db"
 TEST_FOLDER="tests"
 declare -a test_files=("tests_database_api_users" "tests_database_api_rooms" "tests_database_api_bookings"
 "tests_resource_api_room" "tests_resource_api_bookings_of_room" "tests_resource_api_booking_of_user"
-"tests_resource_api_bookings_of_user" "tests_resource_api_history_bookings")
+"tests_resource_api_bookings_of_user" "tests_resource_api_history_bookings" "func_tests_database_api_users"
+"func_tests_database_api_rooms" "func_tests_database_api_bookings")
 
 function create_test_db {
     ## Check database folder exists

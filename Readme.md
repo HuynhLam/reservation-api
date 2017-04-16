@@ -21,14 +21,14 @@ The documentation of the API can be found in
 
 The following resources are provided by the API.
 
-![resources list](/projects/PWP14/repos/project/raw/master/documentation/resources_list.png)
+![resources list](/projects/PWP14/repos/project/raw/documentation/resources_list.png)
 
 ## Implemented Methods
 
 Because of the time restrictions, not all methods are implemented. 
 The below table shows available methods under resources.
 
-![implemented methods](/projects/PWP14/repos/project/raw/master/documentation/methods.png)
+![implemented methods](/projects/PWP14/repos/project/raw/documentation/resources_list.png)
 
 
 ## Requirements
