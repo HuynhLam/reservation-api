@@ -472,7 +472,7 @@ class User(Resource):
         pass
 
     def delete(self, username):
-    """
+        """
         Deletes 1 User from the Tellus API.
 
         INPUT PARAMETERS:
