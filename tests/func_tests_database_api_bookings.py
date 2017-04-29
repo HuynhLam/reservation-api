@@ -173,7 +173,7 @@ class BookingsTestCase(unittest.TestCase):
 
     def test_modify_booking_of_room(self):
         """
-        Test that we can successfully added new User
+        Test that we can successfully modify booking of room
         """
         print "("+self.test_modify_booking_of_room.__name__+")", self.test_modify_booking_of_room.__doc__
 
