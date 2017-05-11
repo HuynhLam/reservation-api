@@ -100,7 +100,7 @@ const ENTRYPOINT = "/tellus/api/rooms/"; //Entrypoint: Resource Rooms List
  *             Each room is an anchor pointing to the respective bookings of room url.
  * ONERROR => Show an alert to the user.
  *
- * @param {string} [apiurl = ENTRYPOINT] - The url of the Rooms instance.
+ * @param {string} [apiurl = ENTRYPOINT] - The url of the Rooms list.
 **/
 function getRooms(apiurl) {
     apiurl = apiurl || ENTRYPOINT;
@@ -127,11 +127,17 @@ function getRooms(apiurl) {
             //Extract the name by getting the data values. Once obtained
             // the name use the method appendRoomToList to show the room
             // information in the UI.
-            appendRoomToList(room['@controls']['tellus:bookings-room'].href, room.name);
+            var roomElement = appendRoomToList(room['@controls']['tellus:bookings-room'].href, room.name);
 
             //Create modify form from schema
             if("edit" in room['@controls']) {
-
+                var edit = room['@controls'].edit;
+                if (edit.schema) {
+                    $form = createFormFromSchema(edit.href, edit.schema, "room_form");
+                    fillFormWithMasonData($form, room);
+                    $button = $("<a href='#' class='modifyRoomLink'>"+edit.title+"</a>");
+                    roomElement.append($button);
+                }
             }
         }
     }).fail(function (jqXHR, textStatus, errorThrown){
@@ -276,6 +282,42 @@ function addBooking(apiurl,booking){
             console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
         }
         alert ("Could not create new booking:"+jqXHR.responseJSON.message);
+    });
+}
+
+/**
+ * Private function which populates the room_form with the related data
+ * by calling {@link #fillFormWithMasonData}
+ * ONSUCCESS =>
+ *     a)populate form by calling {@link #fillFormWithMasonData}
+ * ONERROR =>
+ *     a)Show an alert informing the user that the data could not get from server.
+ *
+ * @param {Object} apiurl - The url of the Rooms list.
+ * @param {Object} roomname - name of the room.
+**/
+function populateRoomForm(apiurl, roomname) {
+    return $.ajax({
+        url: apiurl,
+        dataType:DEFAULT_DATATYPE
+    }).done(function (data, textStatus, jqXHR){
+        if (DEBUG) {
+            console.log ("RECEIVED RESPONSE: data:",data,"; textStatus:",textStatus);
+        }
+        //Extract the rooms
+        var rooms = data.items;
+        for (var i=0; i < rooms.length; i++){
+            var room = rooms[i];
+            if(room.name == roomname) {
+                fillFormWithMasonData($("#room_form"), room);
+            }
+        }
+    }).fail(function (jqXHR, textStatus, errorThrown){
+        if (DEBUG) {
+            console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
+        }
+        //Inform user about the error using an alert message.
+        alert ("Could not fetch the room data.  Please, try again");
     });
 }
 
@@ -527,7 +569,7 @@ function deselectRoom() {
  * Internally it makes click on the href of the selected user.
 **/
 function reloadBookingsList() {
-    var selected = $("#room_list li.selected a");
+    var selected = $("#room_list li.selected a.room_bookings_link");
     selected.click();
 }
 
@@ -602,13 +644,50 @@ function handleGetBookings(event) {
     }
     $(this).parent().addClass("selected");
     $("#bookings_list").empty();
-    $("#roomname").text($(this).parent().text());
+    $(".bookings").show();
+    $("#modifyRoomSection").hide();
+    $("#newBooking").show();
+    $("#createBooking").show();
+    $("#modifyRoom").hide();
     $("#mainContent").show();
+    $("#roomnametitle").text($(this).text());
     var url = $(this).attr("href");
     console.log(url);
     getRoomBookings(url);
 
     return false; //IMPORTANT TO AVOID <A> BUBLING
+}
+
+/**
+ * Uses the API to update the room's with the form attributes in the present form.
+ *
+ * TRIGGER: #modifyRoom
+**/
+function handleModifyRoomLink(event){
+    if (DEBUG) {
+        console.log ("Triggered handleModifyRoomLink");
+    }
+    event.preventDefault();
+    if($("#room_list").find("li.selected").length) {
+        $("#room_list").find("li.selected").removeClass("selected");
+    }
+    $(this).parent().addClass("selected");
+    // Hide the irrelevant content
+    $("#bookings_list").empty();
+    $(".bookings").hide();
+    $("#newBooking").hide();
+    $("#createBooking").hide();
+    $("#mainContent").show();
+    populateRoomForm(ENTRYPOINT, $(this).parent().find("a.room_bookings_link").text());
+    // Show Modify Room
+    $(".room").show();
+    $("#modifyRoomSection").show();
+    $("#modifyRoom").show();
+    //var $form = $("#modifyRoomSection").closest("form");
+    //var body = serializeFormTemplate($form);
+    //var url = $form.attr("action");
+    //users_collection_edit_item(url, body);
+    return false; //Avoid executing the default submit
 }
 
 /**
@@ -637,8 +716,9 @@ $(function(){
     // #room_list li a -> handleGetBookings
     // #createBooking -> handleCreateBooking
     $('#bookings_list').on('click', 'li.booking a.deleteBooking', handleDeleteBooking);
-    $('#room_list').on('click', 'li a', handleGetBookings);
+    $('#room_list').on('click', 'li a.room_bookings_link', handleGetBookings);
     $('#createBooking').click(handleCreateBooking);
+    $('#room_list').on('click', 'li a.modifyRoomLink', handleModifyRoomLink);
 
 
     //Retrieve list of rooms from the server
