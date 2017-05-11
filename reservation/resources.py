@@ -652,6 +652,7 @@ class Room(Resource):
 
         # Parse JSON request data
         request_body = request.get_json(force=True)
+        print request_body
         if not request_body:
             return create_error_response(415, "Unsupported Media Type",
                                          "Use a JSON compatible format")

@@ -58,16 +58,22 @@ div#sidebar {
     background:#000;
 }
 
-#sidebar ul li a {
+#sidebar ul li{
         display: block;
+}
+
+#sidebar ul li a {
         margin-right: 20px;
         width: 140px;
         font-size: 14px;
         line-height: 44px;
         text-align: left;
         text-decoration: none;
+        color: #f44262;
+}
+#sidebar ul li a.modifyRoomLink {
         color: #777;
-    }
+}
 #sidebar ul li a:hover {
     color: #fff;
 }
