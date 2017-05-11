@@ -364,7 +364,48 @@ function modifyRoom(apiurl, body){
 
 /**** END RESTFUL CLIENT****/
 
+/**** START RESTFUL CLIENT FOR JOKE API****/
 
+/**** Description of the functions that call ICNDb API by means of 
+jQuery.ajax()
+       calls. Only the function to gey random joke is implemented.
+****/
+
+/**
+  * This function gets a random joke from ICNDb API and shows it on the 
+screen.
+  *
+  * Sends an AJAX GET request to get random joke.
+  *
+  * ONSUCCESS=> Show the joke in #joke.
+  * ONERROR => Show an alert to the user.
+  *
+  * @param {string} [apiurl] - The url of the random joke endpoint.
+**/
+function getJoke(apiurl) {
+     return $.ajax({
+         url: apiurl,
+         dataType:DEFAULT_DATATYPE
+     }).done(function (data, textStatus, jqXHR){
+         if (DEBUG) {
+             console.log ("RECEIVED RESPONSE: data:",data,"; 
+textStatus:",textStatus);
+         }
+         //Extract the joke
+         var joke = data.value.joke;
+         //Put the joke in place
+         $("#joke").append(joke);
+     }).fail(function (jqXHR, textStatus, errorThrown){
+         if (DEBUG) {
+             console.log ("RECEIVED ERROR: textStatus:",textStatus, 
+";error:",errorThrown);
+         }
+         //Inform user about the error using an alert message.
+         alert ("Could not fetch the list of rooms.  Please, try again");
+     });
+}
+
+/**** END RESTFUL CLIENT FOR JOKE API****/
 
 /**** UI HELPERS ****/
 
