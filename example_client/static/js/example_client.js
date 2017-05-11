@@ -4,8 +4,7 @@
                  (retrieve rooms list, bookings of room list, modify a room
                  as well as add and remove new bookings form the system).
  * @author <a href="mailto:onur.ozuduru@ee.oulu.fi">Onur Özüduru</a>
- //TODO add email and name
- * @author <a href="mailto:@oulu.fi">Lam</a>
+ * @author <a href="mailto:lam.huynh@student.oulu.fi">Lam Huynh</a>
  * @version 1.0
  *
  * NOTE: The documentation utilizes jQuery syntax to refer to classes and ids in
@@ -60,6 +59,13 @@ const DEFAULT_DATATYPE = "json";
  * @default
  */
 const ENTRYPOINT = "/tellus/api/rooms/"; //Entrypoint: Resource Rooms List
+
+/**
+ * End point for random joke
+ * @constant {string}
+ * @default
+ */
+const JOKE_ENDPOINT = "http://api.icndb.com/jokes/random/";
 
 /**** END CONSTANTS****/
 
@@ -357,6 +363,8 @@ function modifyRoom(apiurl, body){
 
 
 /**** END RESTFUL CLIENT****/
+
+
 
 /**** UI HELPERS ****/
 
@@ -733,5 +741,6 @@ $(function(){
 
     //Retrieve list of rooms from the server
     getRooms(ENTRYPOINT);
+    getJoke(JOKE_ENDPOINT);
 });
 /*** END ON LOAD**/
