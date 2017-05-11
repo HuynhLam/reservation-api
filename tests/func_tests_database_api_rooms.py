@@ -123,9 +123,9 @@ class RoomsTestCase(unittest.TestCase):
                 self.assertEquals("string", value["type"])
 
             ## Check that add_control_books_room is correct
-            self.assertIn("tellus:books-room", item["@controls"])
-            self.assertIn("href", item["@controls"]["tellus:books-room"])
-            self.assertEquals("http://" + local_host + item["@controls"]["tellus:books-room"]["href"], resources.api.url_for(resources.BookingsOfRoom, name=item["name"]))
+            self.assertIn("tellus:bookings-room", item["@controls"])
+            self.assertIn("href", item["@controls"]["tellus:bookings-room"])
+            self.assertEquals("http://" + local_host + item["@controls"]["tellus:bookings-room"]["href"], resources.api.url_for(resources.BookingsOfRoom, name=item["name"]))
 
     def test_get_rooms_mimetype(self):
         """

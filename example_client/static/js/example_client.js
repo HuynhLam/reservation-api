@@ -1,7 +1,7 @@
 /**
  * @fileOverview Example client for Reservation API.
                  It utilizes the Reservation API to handle room and booking information
-                 (retrieve rooms list, booking of rooms list,
+                 (retrieve rooms list, bookings of room list, modify a room
                  as well as add and remove new bookings form the system).
  * @author <a href="mailto:onur.ozuduru@ee.oulu.fi">Onur Özüduru</a>
  //TODO add email and name
@@ -33,13 +33,6 @@ const MASONJSON = "application/vnd.mason+json";
 const PLAINJSON = "application/json";
 
 /**
- * Link to USER_PROFILE
- * @constant {string}
- * @default
- */
-const TELLUS_USER_PROFILE = "/profiles/user_profile/";
-
-/**
  * Link to ROOM_PROFILE
  * @constant {string}
  * @default
@@ -52,13 +45,6 @@ const TELLUS_ROOM_PROFILE = "/profiles/room_profile/";
  * @default
  */
 const TELLUS_BOOKING_PROFILE = "/profiles/booking_profile/";
-
-/**
- * Link to ERROR_PROFILE
- * @constant {string}
- * @default
- */
-const ERROR_PROFILE = "/profiles/error_profile/";
 
 /**
  * Default datatype to be used when processing data coming from the server.
@@ -81,9 +67,10 @@ const ENTRYPOINT = "/tellus/api/rooms/"; //Entrypoint: Resource Rooms List
 /**** START RESTFUL CLIENT****/
 
 /**** Description of the functions that call Forum API by means of jQuery.ajax()
-      calls. We have implemented one function per link relation in both profiles.
-      Since we are not interesting in the whole API functionality, some of the
-      functions does not do anything. Hence, those link relations are ignored
+      calls. We have implemented only the functions that we will use, since,
+      we only want to use room and booking profiles, not all client functions are
+      implemented nor placed in this file for the API. This is just an example
+      client which shows how to use hypermedia responses.
 ****/
 
 
@@ -92,7 +79,7 @@ const ENTRYPOINT = "/tellus/api/rooms/"; //Entrypoint: Resource Rooms List
  *
  * Associated rel attribute: Rooms Mason+JSON and bookings-room
  *
- * Sends an AJAX GET request to retrive the list of all the rooms of the application
+ * Sends an AJAX GET request to retrieve the list of all the rooms of the application
  *
  * ONSUCCESS=> Show rooms in the #room_list.
  *             After processing the response it utilizes the method {@link #appendRoomToList}
@@ -165,7 +152,7 @@ function getRooms(apiurl) {
  *
  * ONERROR =>   a) Alert the user
  *              b) Unselect the room from the list and go back to initial state
- *                (Call {@link deleselectRoom})
+ *                (Call {@link deselectRoom})
  *
  * @param {string} apiurl - The url of the Bookings list of room.
 **/
@@ -308,8 +295,14 @@ function populateRoomForm(apiurl, roomname) {
         var rooms = data.items;
         for (var i=0; i < rooms.length; i++){
             var room = rooms[i];
+            // Find the desired room
             if(room.name == roomname) {
+                //Populate data
                 fillFormWithMasonData($("#room_form"), room);
+                if(!$("#room_form .form_content #name").length) {
+                    $("#room_form .form_content").append('<input readonly="true" name="name" id="name"  value="'+room.name+'" type="text">');
+                }
+                $("#room_form").attr("action", room["@controls"].edit.href);
             }
         }
     }).fail(function (jqXHR, textStatus, errorThrown){
@@ -323,23 +316,23 @@ function populateRoomForm(apiurl, roomname) {
 
 
 /**
- * Sends an AJAX request to modify the restricted profile of a user, using PUT
+ * Sends an AJAX request to modify the room, using PUT
  *
- * NOTE: This is NOT utilizied in this application.
  *
- * Associated rel attribute: edit (user profile)
+ * Associated rel attribute: edit (room profile)
  *
  * ONSUCCESS =>
- *     a)Show an alert informing the user that the user information has been modified
+ *     a)Show an alert informing the user that the room information has been modified
+ *     b)Refresh the page
  * ONERROR =>
  *     a)Show an alert informing the user that the new information was not stored in the databse
  *
- * @param {string} apiurl - The url of the intance to edit.
+ * @param {string} apiurl - The url of the instance to edit.
  * @param {object} body - An associative array containing the new data of the
- *  target user
+ *  target room
  *
 **/
-function edit_user(apiurl, body){
+function modifyRoom(apiurl, body){
     $.ajax({
         url: apiurl,
         type: "PUT",
@@ -350,14 +343,15 @@ function edit_user(apiurl, body){
         if (DEBUG) {
             console.log ("RECEIVED RESPONSE: data:",data,"; textStatus:",textStatus);
         }
-        alert ("User information have been modified successfully");
+        alert ("Room information have been modified successfully");
+        location.reload();
 
     }).fail(function (jqXHR, textStatus, errorThrown){
         if (DEBUG) {
             console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
         }
         var error_message = $.parseJSON(jqXHR.responseText).message;
-        alert ("Could not modify user information;\r\n"+error_message);
+        alert ("Could not modify room information;\r\n"+error_message);
     });
 }
 
@@ -382,6 +376,7 @@ function appendRoomToList(bookingsUrl, name) {
     $("#room_list").append($room);
     return $room;
 }
+
 
 /**
  * ##### This function "createFormFromSchema" is borrowed from course exercises. #####
@@ -659,9 +654,9 @@ function handleGetBookings(event) {
 }
 
 /**
- * Uses the API to update the room's with the form attributes in the present form.
+ * Shows modify Room form.
  *
- * TRIGGER: #modifyRoom
+ * TRIGGER: .modifyRoomLink
 **/
 function handleModifyRoomLink(event){
     if (DEBUG) {
@@ -683,10 +678,22 @@ function handleModifyRoomLink(event){
     $(".room").show();
     $("#modifyRoomSection").show();
     $("#modifyRoom").show();
-    //var $form = $("#modifyRoomSection").closest("form");
-    //var body = serializeFormTemplate($form);
-    //var url = $form.attr("action");
-    //users_collection_edit_item(url, body);
+    return false; //Avoid executing the default submit
+}
+
+/**
+ * Uses the API to update the room's with the form attributes in the present form.
+ *
+ * TRIGGER: #modifyRoom
+**/
+function handleModifyRoom(event){
+    if (DEBUG) {
+        console.log ("Triggered handleModifyRoom");
+    }
+    var $form = $("#modifyRoomSection #room_form");
+    var body = serializeFormTemplate($form);
+    var url = $form.attr("action");
+    modifyRoom(url, body);
     return false; //Avoid executing the default submit
 }
 
@@ -715,10 +722,13 @@ $(function(){
     // #bookings_list li.booking a.deleteBooking -> handleDeleteBooking
     // #room_list li a -> handleGetBookings
     // #createBooking -> handleCreateBooking
+    // #room_list li a.modifyRoomLink -> handleModifyRoomLink
+    // #modifyRoom -> handleModifyRoom
     $('#bookings_list').on('click', 'li.booking a.deleteBooking', handleDeleteBooking);
     $('#room_list').on('click', 'li a.room_bookings_link', handleGetBookings);
     $('#createBooking').click(handleCreateBooking);
     $('#room_list').on('click', 'li a.modifyRoomLink', handleModifyRoomLink);
+    $('#modifyRoom').click(handleModifyRoom);
 
 
     //Retrieve list of rooms from the server
