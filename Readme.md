@@ -211,7 +211,7 @@ The code can be found under `example_client` folder.
 
 In addition the client uses Chuck Norris jokes database RESTful API to provide random jokes. 
 It is provided by `https://api.icndb.com` as entrypoint of the API. Documentation can be found 
-in `http://www.icndb.com/api/`.
+in [http://www.icndb.com/api/](http://www.icndb.com/api/).
 
 The `getJoke(apiurl)` function under `example_client.js` uses this additional API to 
 fetch one random joke and to put it to header of page.
