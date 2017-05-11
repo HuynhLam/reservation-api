@@ -3,10 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <title>Example Client</title>
+    <link rel="stylesheet" type="text/css" href="css/ui.css">
     <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="js/example_client.js"></script>
 </head>
 <body>
+    <div id="intro">
+        <h1>Reservation Panel</h1>
+        <span id="instructions">Click on a room name in the sidebar to see list of bookings under this room.
+            Click "Delete Booking" to remove booking and fill the form then clicl create button to create booking.</span>
+    </div>
+    <div id= "content">
+        <div id="sidebar">
+            <!-- Side bar area -->
+             <ul id="room_list">
 
+            </ul>
+        </div>
+        <div id = "mainContent" >
+            <!-- Main content area -->
+            <div class="bookings">
+                <h3>Bookings for <span id="roomname"></span></h3>
+                <ul id="bookings_list">
+
+                </ul>
+                <div id ="newBooking">
+                    <form action="#" id="new_booking_form">
+                        <div class="form_content">
+
+                        </div>
+                        <div class="commands">
+                            <input id="createBooking" type="button" class="createButton" value="Create"/>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

@@ -249,7 +249,7 @@ class ReservationObject(MasonObject):
         """
 
         self["@controls"]["tellus:bookings-room"] = {
-            "href": api.url_for(Bookings, name=name),
+            "href": api.url_for(BookingsOfRoom, name=name),
             "title": "List all bookings of Room"
         }
 
@@ -605,7 +605,7 @@ class RoomsList(Resource):
             item.add_control("profile", href=TELLUS_ROOM_PROFILE)
             item.add_control("collection", href=api.url_for(RoomsList))
             item.add_control_edit_room(room["roomname"])
-            item.add_control_books_room(name=room["roomname"])
+            item.add_control_bookings_room(name=room["roomname"])
             
             items.append(item)
 
