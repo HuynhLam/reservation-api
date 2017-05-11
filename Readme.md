@@ -10,6 +10,9 @@ database interactions.
 The following part explains the *Reservation API* in general, please note that it depends on 
 *Database API* so, **before running `resources.py` make sure that *Database API* is working.** 
 
+An example client is provided in this project. Since focus is on API, details about example client 
+can be found under the section *Example Client*.
+
 **To read more about *Database API*, please see the section [Database API](#markdown-header-database-api) in this Readme file.**
 
 ## Tellus Room Reservation API Documentation
@@ -67,6 +70,7 @@ If you want to use them, you must give execute permissions to these scripts.
     $ chmod +x create_and_populate_db.sh
     $ chmod +x run_tests.sh
     $ chmod +x run_tests_api_resources.sh
+    $ chmod +x check_client_file_structure.sh
 ```
 
 _project_ is the name of the folder which includes all codes.
@@ -82,6 +86,9 @@ named **check_file_structure.sh** can be run.
 
 It gives error message if one of the important file is missing and it inform 
 user with a warning if file is missing but API can work without it.
+
+> **Please note that, this script only checks for API files.**
+> **To check structure of client part, please read _Check File Structure of Client_ under section _Example Client_**.
 
 #### Creating Database Tables and Populating Them
 
@@ -189,3 +196,112 @@ providing a clear output for resource tests.
 ```bash
     $ ./run_tests_api_resources.sh
 ```
+
+### Example Client
+
+In addition to backend code, example client is also provided. Since client does 
+not affect of running API, it will be explained in this section. **Please note that, 
+this is just an example client which only uses 4 resources from the API.**
+
+The point of having this client is giving an example to work with API and 
+showing that it is okay to work with hypermedia responses. Therefore, it is a hypermedia 
+client which means it creates possible next stages based on `controls` under response.
+
+The code can be found under `example_client` folder.
+
+In addition the client uses Chuck Norris jokes database RESTful API to provide random jokes. 
+It is provided by `https://api.icndb.com` as entrypoint of the API. Documentation can be found 
+in `http://www.icndb.com/api/`.
+
+The `getJoke(apiurl)` function under `example_client.js` uses this additional API to 
+fetch one random joke and to put it to header of page.
+
+#### Dependencies
+
+The client code depends:
+
+* [jQuery](https://jquery.com/)
+
+The compressed edition of version jQuery 3.2.1 has already provided under `example_client/js/` 
+folder. If it cannot be found its place, it is possible to download from 
+[jQuery download page](https://jquery.com/download/).
+
+#### Used Resources
+
+The below table shows which resources and methods are used by which functions 
+under `example_client.js`.
+
+Resource Name | HTTP Method | Function Name
+------------- | ----------- | -------------
+Rooms List | GET | `getRooms`
+Bookings of Room | GET | `getRoomBookings`
+Bookings of Room | POST | `addBooking`
+Booking of Room | DELETE | `deleteBooking`
+Room | PUT | `modifyRoom`
+
+
+#### Check File Structure of Client
+
+To make sure that every folder and file are in the right place for the client, the script
+named **check_client_file_structure.sh** can be run.
+
+First give it to execute permission.
+
+```bash
+    $ cd project
+    $ chmod +x check_client_file_structure.sh
+```
+
+_project_ is the name of the folder which includes all codes.
+
+Then run it with the following command.
+
+```bash
+    $ ./check_client_file_structure.sh
+```
+
+It gives error message if one of the important file is missing for client and it inform 
+user with a warning if file is missing but Client can work without it.
+
+#### How to Run API with Client
+
+The client is static and creates possible next step codes dynamically from responses 
+via javascript. Therefore, middleware dispatcher is needed to run client and server codes 
+at the same time.
+
+To run client with API backend, it is needed to run `run_with_client.py` with `python` command.
+
+
+```bash
+    $ python run_with_client.py
+```
+
+An example output of the above command can be like that:
+
+```bash
+     * Running on http://localhost:5000/ (Press CTRL+C to quit)
+     * Restarting with stat
+     * Debugger is active!
+     * Debugger pin code: 294-477-169
+```
+
+It is same output with running only the API part, however if the page `index.html` opens 
+in web browser with going `http://localhost:5000/example_client/index.html`, the below 
+example output might be given by server. This means that, it serves client and API 
+at the same time.
+
+```bash
+    127.0.0.1 - - [11/May/2017 21:50:20] "GET /example_client/index.html HTTP/1.1" 200 -
+    127.0.0.1 - - [11/May/2017 21:50:20] "GET /example_client/css/ui.css HTTP/1.1" 200 -
+    127.0.0.1 - - [11/May/2017 21:50:20] "GET /example_client/js/jquery-3.2.1.min.js HTTP/1.1" 200 -
+    127.0.0.1 - - [11/May/2017 21:50:20] "GET /example_client/js/example_client.js HTTP/1.1" 200 -
+    127.0.0.1 - - [11/May/2017 21:50:20] "GET /tellus/api/rooms/ HTTP/1.1" 200 -
+```
+
+##### Screenshots of Example Client
+
+Some screenshots can be found below.
+
+![screenshot0_of_client](/projects/PWP14/repos/project/raw/example_client/screenshots/screenshot0.png)
+
+![screenshot1_of_client](/projects/PWP14/repos/project/raw/example_client/screenshots/screenshot1.png)
