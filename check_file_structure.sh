@@ -90,5 +90,7 @@ do
 done
 
 echo "It seems that everything is OK."
+echo "Please note that only the API structure is checked."
+echo "For checking example client's structure, please run its own script! Please see Readme.md for more info."
 echo "Enjoy with it, bye."
 exit 0
