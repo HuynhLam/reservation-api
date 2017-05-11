@@ -110,7 +110,10 @@ function getRooms(apiurl) {
     }).always(function(){
         //Remove old list of rooms
         //hide bookings
+        //hide room modify page
          $("#room_list").empty();
+         $("#modifyRoom").hide();
+         $("#room").hide();
          $("#mainContent").hide();
 
     }).done(function (data, textStatus, jqXHR){
@@ -125,6 +128,11 @@ function getRooms(apiurl) {
             // the name use the method appendRoomToList to show the room
             // information in the UI.
             appendRoomToList(room['@controls']['tellus:bookings-room'].href, room.name);
+
+            //Create modify form from schema
+            if("edit" in room['@controls']) {
+
+            }
         }
     }).fail(function (jqXHR, textStatus, errorThrown){
         if (DEBUG) {
