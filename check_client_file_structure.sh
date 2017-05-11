@@ -15,6 +15,7 @@ declare -a client_files=("client.py")
 declare -a html_files=("index.html")
 declare -a css_files=("ui.css")
 declare -a js_files=("example_client.js" "jquery-3.2.1.min.js")
+MIDDLEWARE="run_with_client.py"
 
 # Messages to inform user
 ERR="ERROR: Client cannot work properly without this file."
@@ -101,6 +102,16 @@ do
     echo "$i is in right place."
     echo ".........................."
 done
+
+echo "Checking $MIDDLEWARE"
+## Check middleware file exists
+if [ ! -f "$MIDDLEWARE" ]; then
+    echo "$MIDDLEWARE does not exist. Please control your setup."
+    echo $ERR
+    exit 0
+fi
+echo "$MIDDLEWARE is in right place."
+echo ".........................."
 
 echo "It seems that everything is OK."
 echo "Enjoy with it, bye."
