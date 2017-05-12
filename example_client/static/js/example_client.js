@@ -246,8 +246,7 @@ function deleteBooking(apiurl){
  *
  *  ONSUCCESS =>
  *       a) Show an alert informing the user that the booking information has been added.
- *       b) Append the booking to the list of booking by calling {@link #reloadBookingsList}
- *          * {@link #reloadBookingsList} refresh the list by a new API call.
+ *       b) Append the booking to the list of booking.
  *
  * ONERROR =>
  *      a) Show an alert informing that the new information was not stored in the database
