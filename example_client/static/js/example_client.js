@@ -269,7 +269,7 @@ function addBooking(apiurl,booking){
             console.log ("RECEIVED RESPONSE: data:",data,"; textStatus:",textStatus);
         }
         alert ("Booking successfully added");
-        reloadBookingsList();
+        //reloadBookingsList();
     }).fail(function (jqXHR, textStatus, errorThrown){
         if (DEBUG) {
             console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
