@@ -1,6 +1,29 @@
 # Tellus Room Reservation API
 
-This is an API to reserve rooms at Tellus.
+## Info about Project and Course
+
+This was our project with [Lam Huynh](https://github.com/HuynhLam) for Programmable Web Project Course (PWP).
+The project idea was designing and implementing a reservation API for study center (Tellus) in University of Oulu.
+We used design first approach for this project, in this repo we only share the code part.
+
+Please be aware that this was a course project so **all functionality could not be implemented, because of time restrictions**
+point was to learn how to make a web project. Implemented methods are listed under [Implemented Methods](#implemented-methods)
+section.
+
+In the course, it was allowed to barrow code snippets from exercises. We marked them inside the code with comments,
+these parts belong to course instructors 
+[Iván Sánchez](http://www.oulu.fi/cse/personnel/iv%C3%A1n-s%C3%A1nchez) and 
+[Mika Oja](http://www.oulu.fi/cse/personnel/mika-oja).
+
+All codes and the below explanations are submitted as code work for the project and published
+after end of the course and grading.
+
+**Developers:**
+
+- [Onur Özüduru](https://github.com/HuynhLam)
+- [Lam Huynh](https://github.com/HuynhLam)
+
+# Room Reservation API
 
 It consists of 2 APIs, one to interact with the database and the other the main API which provides resources.
 Both of them are explained below, please note that the section *How to Use* explains 
@@ -13,7 +36,7 @@ The following part explains the *Reservation API* in general, please note that i
 An example client is provided in this project. Since focus is on API, details about example client 
 can be found under the section *Example Client*.
 
-**To read more about *Database API*, please see the section [Database API](#markdown-header-database-api) in this Readme file.**
+**To read more about *Database API*, please see the section [Database API](#database-api) in this Readme file.**
 
 ## Tellus Room Reservation API Documentation
 
@@ -49,12 +72,12 @@ For Python the following additional libraries are needed.
 
 ### How to Use
 
-* [Cloning Repo](#markdown-header-cloning-repo)
-* [Checking Structure](#markdown-header-checking-structure)
-* [Creating Database Tables and Populating Them](#markdown-header-creating-database-tables-and-populating-them)
-* [Database API](#markdown-header-using-database-api)
-* [Using Tellus Room Reservation API](#markdown-header-using-tellus-room-reservation-api)
-* [Running Tests](#markdown-header-running-tests)
+* [Cloning Repo](#cloning-repo)
+* [Checking Structure](#checking-structure)
+* [Creating Database Tables and Populating Them](#creating-database-tables-and-populating-them)
+* [Database API](#using-database-api)
+* [Using Tellus Room Reservation API](#using-tellus-room-reservation-api)
+* [Running Tests](#running-tests)
 
 #### Cloning Repo
 
