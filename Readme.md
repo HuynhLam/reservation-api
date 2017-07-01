@@ -47,14 +47,14 @@ The documentation of the API can be found in
 
 The following resources are provided by the API.
 
-![resources list](/projects/PWP14/repos/project/raw/documentation/resources_list.png)
+![resources list](https://github.com/onurozuduru/reservation-api/blob/master/documentation/resources_list.png)
 
 ## Implemented Methods
 
 Because of the time restrictions, not all methods are implemented. 
 The below table shows available methods under resources.
 
-![implemented methods](/projects/PWP14/repos/project/raw/documentation/methods.png)
+![implemented methods](https://github.com/onurozuduru/reservation-api/blob/master/documentation/methods.png)
 
 
 ## Requirements
@@ -325,6 +325,6 @@ at the same time.
 
 Some screenshots can be found below.
 
-![screenshot0_of_client](/projects/PWP14/repos/project/raw/example_client/screenshots/screenshot0.png)
+![screenshot0_of_client](https://github.com/onurozuduru/reservation-api/blob/master/example_client/screenshots/screenshot0.png)
 
-![screenshot1_of_client](/projects/PWP14/repos/project/raw/example_client/screenshots/screenshot1.png)
+![screenshot1_of_client](https://github.com/onurozuduru/reservation-api/blob/master/example_client/screenshots/screenshot1.png)
